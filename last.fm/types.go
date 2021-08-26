@@ -1,10 +1,34 @@
 package last_fm
 
-
 type GetRecentTracks struct {
 	Recenttracks *Recenttracks `json:"recenttracks,omitempty"`
-	Error   int    `json:"error,omitempty"`
-	Message string `json:"message,omitempty"`
+	Error        int           `json:"error,omitempty"`
+	Message      string        `json:"message,omitempty"`
+}
+
+type GetTopArtistsResponse struct {
+	Artists Artists `json:"artists"`
+}
+
+type Artist struct {
+	Name       string  `json:"name,omitempty"`
+	Playcount  string  `json:"playcount,omitempty"`
+	Listeners  string  `json:"listeners,omitempty"`
+	Mbid       string  `json:"mbid,omitempty"`
+	URL        string  `json:"url,omitempty"`
+	Streamable string  `json:"streamable,omitempty"`
+	Image      []Image `json:"image,omitempty"`
+}
+
+type Attr struct {
+	Page       string `json:"page,omitempty"`
+	PerPage    string `json:"perPage,omitempty"`
+	TotalPages string `json:"totalPages,omitempty"`
+	Total      string `json:"total,omitempty"`
+}
+type Artists struct {
+	Artist []Artist `json:"artist,omitempty"`
+	Attr   Attr     `json:"@attr,omitempty"`
 }
 
 type Recenttracks struct {
@@ -23,11 +47,11 @@ type RecenttracksAttr struct {
 type Track struct {
 	Artist     *Album     `json:"artist,omitempty"`
 	Attr       *TrackAttr `json:"@attr,omitempty"`
-	Mbid       string    `json:"mbid,omitempty"`
+	Mbid       string     `json:"mbid,omitempty"`
 	Album      *Album     `json:"album,omitempty"`
-	Streamable string    `json:"streamable,omitempty"`
-	URL        string    `json:"url,omitempty"`
-	Name       string    `json:"name,omitempty"`
+	Streamable string     `json:"streamable,omitempty"`
+	URL        string     `json:"url,omitempty"`
+	Name       string     `json:"name,omitempty"`
 	Image      []Image    `json:"image,omitempty"`
 	Date       *Date      `json:"date,omitempty"`
 }
@@ -47,7 +71,7 @@ type Date struct {
 }
 
 type Image struct {
-	Size *Size   `json:"size,omitempty"`
+	Size *Size  `json:"size,omitempty"`
 	Text string `json:"#text,omitempty"`
 }
 
