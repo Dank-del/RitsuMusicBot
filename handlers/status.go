@@ -13,7 +13,7 @@ import (
 )
 
 func statusFilter(msg *gotgbot.Message) bool {
-	return strings.Contains(strings.ToLower(msg.Text), "status")
+	return strings.Contains(strings.ToLower(msg.Text), statusMessage)
 }
 
 func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -64,13 +64,12 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(msg.From.FirstName), s)
 	m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Text), track.Name)
 	m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
-    yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
-    	url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Text, track.Name)))
+	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
+		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Text, track.Name)))
 	_, err = msg.Reply(b, m,
-		&gotgbot.SendMessageOpts{ParseMode: "html", ReplyMarkup:
-			gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
-				{Text: "View on Last.FM", Url: track.URL},
-				{Text: "Youtube", Url: yturl},
-			}}}})
+		&gotgbot.SendMessageOpts{ParseMode: "html", ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
+			{Text: "View on Last.FM", Url: track.URL},
+			{Text: "Youtube", Url: yturl},
+		}}}})
 	return err
 }
