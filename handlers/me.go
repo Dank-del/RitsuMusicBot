@@ -7,6 +7,7 @@ import (
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	last_fm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 	"html"
+	"time"
 )
 
 func meHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -18,21 +19,29 @@ func meHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 	}
-	if getusername == nil {
+	if getusername.LastFmUsername == "A" {
 		_, err := msg.Reply(b, "<i>Error: lastfm username not set, use /setusername</i>", &gotgbot.SendMessageOpts{ParseMode: "html"})
 		if err != nil {
 			return err
 		}
 	}
 	lastFMuser, _ := last_fm.GetLastFMUser(getusername.LastFmUsername)
+	createdAt := time.Unix(int64(lastFMuser.User.Registered.Text), 0).Format(time.RFC850)
+
 	m := fmt.Sprintf("<b>%s</b>\n\n", lastFMuser.User.Name)
 	m += fmt.Sprintf("<b>Playcount</b>: %s\n", lastFMuser.User.Playcount)
 	m += fmt.Sprintf("<b>Playlist Count</b>: %s\n", lastFMuser.User.Playlists)
 	m += fmt.Sprintf("<b>Gender</b>: %s\n", lastFMuser.User.Gender)
-	m += fmt.Sprintf("<b>Playcount</b>: %s\n", lastFMuser.User.Playcount)
-	m += fmt.Sprintf("<b>Age</b>: %s\n", lastFMuser.User.Age)
+	// m += fmt.Sprintf("<b>Playcount</b>: %s\n", lastFMuser.User.Playcount)
+	m += fmt.Sprintf("<b>Age</b>: %s\n\n", lastFMuser.User.Age)
+	m += fmt.Sprintf("<b>Created at</b>\n <code>%s</code>", createdAt)
 
-	_, err = b.SendPhoto(msg.Chat.Id, lastFMuser.User.Image[3].Text, &gotgbot.SendPhotoOpts{ParseMode: "html", Caption: m,
+	pic := lastFMuser.User.Image
+	if pic == nil {
+		_, err = msg.Reply(b, m, &gotgbot.SendMessageOpts{ParseMode: "html"})
+		return err
+	}
+	_, err = b.SendPhoto(msg.Chat.Id, pic[3].Text, &gotgbot.SendPhotoOpts{ParseMode: "html", Caption: m,
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
 			{Text: "View on Last.FM", Url: lastFMuser.User.URL},
 		}}}})

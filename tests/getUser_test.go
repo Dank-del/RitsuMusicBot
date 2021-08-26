@@ -6,14 +6,14 @@ import (
 	"testing"
 )
 
-func TestGetUser(t *testing.T){
+func TestGetUser(t *testing.T) {
 	err := config.GetConfig()
 	if err != nil {
 		t.Error(err.Error())
 	}
-	d, err := last_fm.GetLastFMUser("mimie03")
+	d, err := last_fm.GetLastFMUser("Supersonic27543")
 	if err != nil {
 		t.Error(err.Error())
 	}
-	t.Log(d.User.Playcount)
+	t.Log(d.User.Image[0].Text)
 }

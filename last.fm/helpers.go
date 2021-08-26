@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func GetRecentTracksByUsername(username string) (res *GetRecentTracks, err error)  {
+func GetRecentTracksByUsername(username string) (res *GetRecentTracks, err error) {
 	reqUrl := recentTracksBaseUrl + username + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) + "&format=json"
 	// logging.Info(reqUrl)
 	resp, err := http.Get(reqUrl)
@@ -44,9 +44,8 @@ func GetRecentTracksByUsername(username string) (res *GetRecentTracks, err error
 
 }
 
-
 func GetLastFMUser(username string) (res *LastFMUser, err error) {
-   reqUrl := userBaseUrl + username + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) + "&format=json"
+	reqUrl := userBaseUrl + username + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) + "&format=json"
 	resp, err := http.Get(reqUrl)
 	if err != nil {
 		log.Println(err.Error())
@@ -67,6 +66,38 @@ func GetLastFMUser(username string) (res *LastFMUser, err error) {
 	}
 
 	data := new(LastFMUser)
+	err = json.Unmarshal(d, &data)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func GetTopArtists() (res *GetTopArtistsResponse, err error) {
+	reqUrl := getTopArtistsBaseURl + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) + "&format=json"
+	fmt.Println(reqUrl)
+	resp, err := http.Get(reqUrl)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			// why can't i return anything from here ??
+			logging.Warn(err.Error())
+		}
+	}(resp.Body)
+	d, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	data := new(GetTopArtistsResponse)
 	err = json.Unmarshal(d, &data)
 	if err != nil {
 		log.Println(err.Error())
