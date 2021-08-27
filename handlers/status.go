@@ -18,10 +18,18 @@ func statusFilter(msg *gotgbot.Message) bool {
 
 func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.Message
-	uname, err := database.GetUser(msg.From.Id)
-	_, err = b.SendChatAction(msg.Chat.Id, "typing")
+	_, err := b.SendChatAction(msg.Chat.Id, "typing")
 	if err != nil {
 		return err
+	}
+	uname, err := database.GetUser(msg.From.Id)
+	if uname.LastFmUsername == "" {
+		_, err := msg.Reply(b, "<i>You haven't registered yourself on this bot yet</i>\n<b>Use /setusername</b>",
+			&gotgbot.SendMessageOpts{ParseMode: "html"})
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
 	if err != nil {
@@ -72,4 +80,86 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Text: "Youtube", Url: yturl},
 		}}}})
 	return err
+}
+
+func statusInlineFilter(q *gotgbot.InlineQuery) bool {
+	if q == nil {
+		return false
+	}
+	return strings.Contains(strings.ToLower(q.Query), statusMessage)
+}
+
+func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
+	query := ctx.InlineQuery
+	user := query.From
+	m, err := getStatus(&user)
+	// fmt.Println(m)
+	var results []gotgbot.InlineQueryResult
+	results = append(results, gotgbot.InlineQueryResultArticle{Id: ctx.InlineQuery.Id, Title: fmt.Sprintf("%s's status", user.FirstName),
+		InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m, ParseMode: "html"}})
+	if err != nil {
+		_, err := query.Answer(b,
+			results,
+			&gotgbot.AnswerInlineQueryOpts{})
+		if err != nil {
+			return err
+		}
+	}
+	_, err = query.Answer(b, results, &gotgbot.AnswerInlineQueryOpts{CacheTime: 0})
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func getStatus(user *gotgbot.User) (string, error) {
+	uname, err := database.GetUser(user.Id)
+	if uname.LastFmUsername == "" {
+		return "<i>You haven't registered yourself on this bot yet</i>\n<b>Use /setusername</b>", err
+	}
+	// fmt.Println(err)
+	if err != nil {
+		return "", err
+	}
+
+	if err != nil {
+		if err != nil {
+			return "", err
+		}
+	}
+	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername)
+	if err != nil {
+		logging.Warn(err.Error())
+		return "", err
+	}
+
+	if d.Error != 0 {
+		if err != nil {
+			return d.Message, err
+		}
+	}
+
+	if d.Recenttracks == nil {
+		if err != nil {
+			return "<i>You haven't scrobbed anything yet...</i>", err
+		}
+	}
+	var s string
+	if d.Recenttracks.Track[0].Attr != nil {
+		s = "is now"
+	} else {
+		s = "was"
+	}
+	track := d.Recenttracks.Track[0]
+	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
+	if err != nil {
+		logging.Warn(err.Error())
+		return "", err
+	}
+
+	m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(user.FirstName), s)
+	m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Text), track.Name)
+	m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
+	return m, err
 }
