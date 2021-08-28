@@ -8,4 +8,5 @@ const (
 	meCommand         = "me"
 	topArtistsCommand = "topartists"
 	helpCommand       = "help"
+	historyCommand    = "history"
 )
