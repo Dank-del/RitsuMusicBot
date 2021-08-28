@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	last_fm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
-	"html"
 )
 
 func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -39,18 +39,17 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	tracks := grc.Recenttracks.Track
 
-	m := fmt.Sprintf("<b> %s's recent tracks</b>\n\n", html.EscapeString(user.FirstName))
+	m := mdparser.GetBold(fmt.Sprintf("%s's recent tracks\n\n", user.FirstName))
 	for a, e := range tracks {
-		m += fmt.Sprintf("%d - <a href=%s>%s</a>\n", a+1, e.URL,
-			html.EscapeString(fmt.Sprintf("%s - %s", e.Artist.Text, e.Name)))
-		m += fmt.Sprintf("<i>From %s</i>\n", html.EscapeString(e.Album.Text))
-		if a > 7 {
+		m = m.AppendNormal(fmt.Sprintf("%d", a+1)).AppendNormal(": ")
+		m = m.AppendHyperLink(fmt.Sprintf("%s - %s\n", e.Artist.Text, e.Name), e.URL)
+		m = m.AppendItalic(fmt.Sprintf("From %s\n", e.Album.Text))
+		if a > 20 {
 			break
 		}
 	}
-	fmt.Println(m)
-	q, err := msg.Reply(b, m,
-		&gotgbot.SendMessageOpts{ParseMode: "html"})
-	fmt.Println(q)
+	// fmt.Println(m)
+	_, err = msg.Reply(b, m.ToString(),
+		&gotgbot.SendMessageOpts{ParseMode: "markdownv2", DisableWebPagePreview: true})
 	return err
 }
