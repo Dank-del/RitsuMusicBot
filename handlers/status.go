@@ -70,10 +70,13 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 	m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(msg.From.FirstName), s)
-	m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Text), track.Name)
+	m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Name), track.Name)
 	m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
+	if track.Loved == "1" {
+		m += fmt.Sprintf(", <i>Loved ♥</i>")
+	}
 	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
-		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Text, track.Name)))
+		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
 	_, err = msg.Reply(b, m,
 		&gotgbot.SendMessageOpts{ParseMode: "html", ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
 			{Text: "View on Last.FM", Url: track.URL},
@@ -159,7 +162,10 @@ func getStatus(user *gotgbot.User) (string, error) {
 	}
 
 	m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(user.FirstName), s)
-	m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Text), track.Name)
+	m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Name), track.Name)
 	m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
+	if track.Loved == "1" {
+		m += fmt.Sprintf(", <i>Loved ♥</i>")
+	}
 	return m, err
 }

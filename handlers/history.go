@@ -45,7 +45,11 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	m := mdparser.GetBold("Recently played tracks by ").AppendMention(user.FirstName, user.Id).AppendNormal("\n\n")
 	for a, e := range tracks {
 		m = m.AppendNormal(fmt.Sprintf("%d", a+1)).AppendNormal(": ")
-		m = m.AppendHyperLink(fmt.Sprintf("%s - %s\n", e.Artist.Text, e.Name), e.URL)
+		m = m.AppendHyperLink(fmt.Sprintf("%s - %s", e.Artist.Name, e.Name), e.URL)
+		if e.Loved == "1" {
+			m = m.AppendItalic(" (Loved ♥)")
+		}
+		m = m.AppendNormal("\n")
 		if e.Album.Text != "" {
 			m = m.AppendBold("From album: ")
 			m = m.AppendItalic(fmt.Sprintf("%s\n", e.Album.Text))
