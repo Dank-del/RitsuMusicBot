@@ -11,7 +11,7 @@ func TestGetUser(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	d, err := last_fm.GetLastFMUser("Supersonic27543")
+	d, err := last_fm.GetLastFMUser("airi_sakura")
 	if err != nil {
 		t.Error(err.Error())
 	}
