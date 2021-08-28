@@ -45,14 +45,15 @@ type RecenttracksAttr struct {
 }
 
 type Track struct {
-	Artist     *Album     `json:"artist,omitempty"`
 	Attr       *TrackAttr `json:"@attr,omitempty"`
+	Artist     *Artist    `json:"artist,omitempty"`
 	Mbid       string     `json:"mbid,omitempty"`
-	Album      *Album     `json:"album,omitempty"`
-	Streamable string     `json:"streamable,omitempty"`
-	URL        string     `json:"url,omitempty"`
-	Name       string     `json:"name,omitempty"`
 	Image      []Image    `json:"image,omitempty"`
+	URL        string     `json:"url,omitempty"`
+	Streamable string     `json:"streamable,omitempty"`
+	Album      *Album     `json:"album,omitempty"`
+	Name       string     `json:"name,omitempty"`
+	Loved      string     `json:"loved,omitempty"`
 	Date       *Date      `json:"date,omitempty"`
 }
 

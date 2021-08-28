@@ -12,8 +12,8 @@ import (
 )
 
 func GetRecentTracksByUsername(username string) (res *GetRecentTracks, err error) {
-	reqUrl := recentTracksBaseUrl + username + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) + "&format=json"
-	// logging.Info(reqUrl)
+	reqUrl := recentTracksBaseUrl + username + fmt.Sprintf("&extended=1&api_key=%s", config.Data.LastFMKey) + "&format=json"
+	//fmt.Println(reqUrl)
 	resp, err := http.Get(reqUrl)
 	if err != nil {
 		log.Println(err.Error())
@@ -46,6 +46,7 @@ func GetRecentTracksByUsername(username string) (res *GetRecentTracks, err error
 
 func GetLastFMUser(username string) (res *LastFMUser, err error) {
 	reqUrl := userBaseUrl + username + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) + "&format=json"
+	//logging.Info(reqUrl)
 	resp, err := http.Get(reqUrl)
 	if err != nil {
 		log.Println(err.Error())
