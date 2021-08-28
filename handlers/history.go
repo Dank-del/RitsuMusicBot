@@ -12,7 +12,10 @@ import (
 func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.Message
 	user := msg.From
-
+	_, err := b.SendChatAction(msg.Chat.Id, "typing")
+	if err != nil {
+		return err
+	}
 	dbuser, err := database.GetUser(user.Id)
 	if err != nil {
 		_, err := msg.Reply(b, fmt.Sprintf("<i>Error: %s</i>", err.Error()),
@@ -39,7 +42,7 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	tracks := grc.Recenttracks.Track
 
-	m := mdparser.GetBold(fmt.Sprintf("%s's recent tracks\n\n", user.FirstName))
+	m := mdparser.GetBold("Recently played tracks by ").AppendMention(user.FirstName, user.Id).AppendNormal("\n\n")
 	for a, e := range tracks {
 		m = m.AppendNormal(fmt.Sprintf("%d", a+1)).AppendNormal(": ")
 		m = m.AppendHyperLink(fmt.Sprintf("%s - %s\n", e.Artist.Text, e.Name), e.URL)
