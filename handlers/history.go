@@ -43,7 +43,10 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	for a, e := range tracks {
 		m = m.AppendNormal(fmt.Sprintf("%d", a+1)).AppendNormal(": ")
 		m = m.AppendHyperLink(fmt.Sprintf("%s - %s\n", e.Artist.Text, e.Name), e.URL)
-		m = m.AppendItalic(fmt.Sprintf("From %s\n", e.Album.Text))
+		if e.Album.Text != "" {
+			m = m.AppendBold("From album: ")
+			m = m.AppendItalic(fmt.Sprintf("%s\n", e.Album.Text))
+		}
 		if a > 20 {
 			break
 		}
