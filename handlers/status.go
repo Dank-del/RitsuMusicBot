@@ -5,6 +5,7 @@ import (
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"github.com/google/uuid"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
@@ -96,11 +97,63 @@ func statusInlineFilter(q *gotgbot.InlineQuery) bool {
 func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 	query := ctx.InlineQuery
 	user := query.From
-	m, err := getStatus(&user)
+	var m mdparser.WMarkDown
 	// fmt.Println(m)
 	var results []gotgbot.InlineQueryResult
-	results = append(results, gotgbot.InlineQueryResultArticle{Id: ctx.InlineQuery.Id, Title: fmt.Sprintf("%s's status", user.FirstName),
-		InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m, ParseMode: "markdownv2"}})
+
+	uname, err := database.GetUser(user.Id)
+	if uname.LastFmUsername == "" {
+		m = mdparser.GetBold(user.FirstName).AppendNormal(" ").AppendItalic("haven't registered themselves on this bot yet.").AppendNormal("\n")
+		m = m.AppendBold("Please use ").AppendMono("/setusername")
+		results = append(results, gotgbot.InlineQueryResultArticle{Id: ctx.InlineQuery.Id, Title: fmt.Sprintf("%s's needs to register themselves", user.FirstName),
+			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
+	}
+
+	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername)
+	if err != nil {
+		logging.Warn(err.Error())
+		return err
+	}
+
+	if d.Error != 0 {
+		m = mdparser.GetItalic(fmt.Sprintf("Error: %s", d.Message))
+		results = append(results, gotgbot.InlineQueryResultArticle{Id: ctx.InlineQuery.Id, Title: fmt.Sprintf("Sorry %s!, I encountered an error :/", user.FirstName),
+			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
+	}
+
+	if d.Recenttracks == nil {
+		m = mdparser.GetItalic("No tracks were being played.")
+		results = append(results, gotgbot.InlineQueryResultArticle{Id: ctx.InlineQuery.Id, Title: fmt.Sprintf("%s haven't played anything yet.", user.FirstName),
+			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
+	}
+
+	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
+	if err != nil {
+		logging.Warn(err.Error())
+		return err
+	}
+
+	for e, i := range d.Recenttracks.Track {
+		var s string
+		if d.Recenttracks.Track[e].Attr != nil {
+			s = "is now"
+		} else {
+			s = "was"
+		}
+		m := mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
+		m = m.AppendItalic(i.Artist.Name).AppendNormal(" - ").AppendBold(i.Name).AppendNormal("\n")
+		m = m.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
+		if i.Loved == "1" {
+			m = m.AppendNormal(", ").AppendItalic("Loved ♥")
+		}
+		results = append(results, gotgbot.InlineQueryResultArticle{Id: uuid.New().String(), Title: fmt.Sprintf("%s - %s", i.Artist.Name, i.Name),
+			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
+
+		if e > 12 {
+			break
+		}
+	}
+
 	if err != nil {
 		_, err := query.Answer(b,
 			results,
@@ -109,8 +162,9 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 	}
-	_, err = query.Answer(b, results, &gotgbot.AnswerInlineQueryOpts{CacheTime: 0})
+	_, err = query.Answer(b, results, &gotgbot.AnswerInlineQueryOpts{})
 	if err != nil {
+		logging.Error(err.Error())
 		return err
 	}
 	return nil
