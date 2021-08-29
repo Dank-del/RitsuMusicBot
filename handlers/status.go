@@ -97,11 +97,13 @@ func statusInlineFilter(q *gotgbot.InlineQuery) bool {
 func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 	query := ctx.InlineQuery
 	user := query.From
+	// fmt.Println(user)
 	var m mdparser.WMarkDown
 	// fmt.Println(m)
 	var results []gotgbot.InlineQueryResult
 
 	uname, err := database.GetUser(user.Id)
+	// fmt.Println(uname)
 	if uname.LastFmUsername == "" {
 		m = mdparser.GetBold(user.FirstName).AppendNormal(" ").AppendItalic("haven't registered themselves on this bot yet.").AppendNormal("\n")
 		m = m.AppendBold("Please use ").AppendMono("/setusername")
@@ -162,7 +164,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 	}
-	_, err = query.Answer(b, results, &gotgbot.AnswerInlineQueryOpts{})
+	_, err = query.Answer(b, results, &gotgbot.AnswerInlineQueryOpts{IsPersonal: true})
 	if err != nil {
 		logging.Error(err.Error())
 		return err
