@@ -15,6 +15,7 @@ func LoadHandlers(d *ext.Dispatcher) {
 	meCMD := handlers.NewCommand(meCommand, meHandler)
 	topArtistsCMD := handlers.NewCommand(topArtistsCommand, topArtistsHandler)
 	historyCMD := handlers.NewCommand(historyCommand, historyCommandHandler)
+	getStatusCMD := handlers.NewCommand(getstatusCommand, getStatusHandler)
 	d.AddHandler(startCMD)
 	d.AddHandler(helpCMD)
 	d.AddHandler(statusMsg)
@@ -24,5 +25,6 @@ func LoadHandlers(d *ext.Dispatcher) {
 	d.AddHandler(topArtistsCMD)
 	d.AddHandler(statusInl)
 	d.AddHandler(historyCMD)
+	d.AddHandler(getStatusCMD)
 
 }

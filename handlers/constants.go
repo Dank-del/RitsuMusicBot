@@ -9,4 +9,5 @@ const (
 	topArtistsCommand = "topartists"
 	helpCommand       = "help"
 	historyCommand    = "history"
+	getstatusCommand  = "getstatus"
 )

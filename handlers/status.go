@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
@@ -13,7 +14,7 @@ import (
 )
 
 func statusFilter(msg *gotgbot.Message) bool {
-	return strings.Contains(strings.ToLower(msg.Text), statusMessage)
+	return strings.HasPrefix(strings.ToLower(msg.Text), statusMessage)
 }
 
 func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -99,7 +100,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 	// fmt.Println(m)
 	var results []gotgbot.InlineQueryResult
 	results = append(results, gotgbot.InlineQueryResultArticle{Id: ctx.InlineQuery.Id, Title: fmt.Sprintf("%s's status", user.FirstName),
-		InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m, ParseMode: "html"}})
+		InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m, ParseMode: "markdownv2"}})
 	if err != nil {
 		_, err := query.Answer(b,
 			results,
@@ -119,7 +120,9 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 func getStatus(user *gotgbot.User) (string, error) {
 	uname, err := database.GetUser(user.Id)
 	if uname.LastFmUsername == "" {
-		return "<i>You haven't registered yourself on this bot yet</i>\n<b>Use /setusername</b>", err
+		m := mdparser.GetBold(user.FirstName).AppendNormal(" ").AppendItalic("haven't registered themselves on this bot yet.").AppendNormal("\n")
+		m = m.AppendBold("Please use ").AppendMono("/setusername")
+		return m.ToString(), err
 	}
 	// fmt.Println(err)
 	if err != nil {
@@ -145,7 +148,7 @@ func getStatus(user *gotgbot.User) (string, error) {
 
 	if d.Recenttracks == nil {
 		if err != nil {
-			return "<i>You haven't scrobbed anything yet...</i>", err
+			return mdparser.GetItalic("You haven't scrobbed anything yet...").ToString(), err
 		}
 	}
 	var s string
@@ -160,12 +163,18 @@ func getStatus(user *gotgbot.User) (string, error) {
 		logging.Warn(err.Error())
 		return "", err
 	}
-
-	m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(user.FirstName), s)
-	m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Name), track.Name)
-	m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
+	m := mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
+	m = m.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
+	m = m.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
 	if track.Loved == "1" {
-		m += fmt.Sprintf(", <i>Loved ♥</i>")
+		m = m.AppendNormal(", ").AppendItalic("Loved ♥")
 	}
-	return m, err
+	/*
+		m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(user.FirstName), s)
+		m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Name), track.Name)
+		m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
+		if track.Loved == "1" {
+			m += fmt.Sprintf(", <i>Loved ♥</i>")
+		}*/
+	return m.ToString(), err
 }
