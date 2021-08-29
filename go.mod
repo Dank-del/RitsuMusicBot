@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/ALiwoto/StrongStringGo v1.0.3 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
 	github.com/mattn/go-sqlite3 v1.14.8 // indirect
