@@ -9,6 +9,7 @@ import (
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
+	genius "gitlab.com/Dank-del/lastfm-tgbot/lyrics"
 	"html"
 	"net/url"
 	"strings"
@@ -71,12 +72,14 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		logging.Warn(err.Error())
 		return err
 	}
+
 	m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(msg.From.FirstName), s)
 	m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Name), track.Name)
 	m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
 	if track.Loved == "1" {
 		m += fmt.Sprintf(", <i>Loved ♥</i>")
 	}
+
 	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
 		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
 	_, err = msg.Reply(b, m,
@@ -84,6 +87,22 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Text: "View on Last.FM", Url: track.URL},
 			{Text: "Youtube", Url: yturl},
 		}}}})
+
+	if strings.Contains(msg.Text, "lyrics") {
+		m = fmt.Sprintf("<b>Lyrics: %s - %s</b>\n\n", html.EscapeString(track.Artist.Name), html.EscapeString(track.Name))
+		var l []string
+		for len(l) < 5 {
+			l, err = genius.GetLyrics(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name))
+		}
+		if err != nil {
+			m += fmt.Sprintf("<i>Error: %s</i>", err.Error())
+		} else {
+			for i := range l {
+				m += fmt.Sprintf("<i>%s</i>\n", html.EscapeString(l[i]))
+			}
+		}
+		_, err = msg.Reply(b, m, &gotgbot.SendMessageOpts{ParseMode: "html"})
+	}
 	return err
 }
 
@@ -148,6 +167,15 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 		if i.Loved == "1" {
 			m = m.AppendNormal(", ").AppendItalic("Loved ♥")
 		}
+
+		/*if strings.Contains(query.Query, "lyrics") {
+			m = m.AppendNormal("\n\n").AppendBold("Lyrics").AppendNormal("\n")
+			l, err := LyricsClient.Search(i.Artist.Name, i.Name)
+			if err != nil {
+				m = m.AppendItalic(fmt.Sprintf("Error: %s", err.Error()))
+			}
+			m = m.AppendItalic(l)
+		} */
 		results = append(results, gotgbot.InlineQueryResultArticle{Id: uuid.New().String(), Title: fmt.Sprintf("%s - %s", i.Artist.Name, i.Name),
 			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
 
