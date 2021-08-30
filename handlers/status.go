@@ -91,8 +91,14 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if strings.Contains(msg.Text, "lyrics") {
 		m = fmt.Sprintf("<b>Lyrics: %s - %s</b>\n\n", html.EscapeString(track.Artist.Name), html.EscapeString(track.Name))
 		var l []string
+		e := 0
 		for len(l) < 5 {
 			l, err = genius.GetLyrics(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name))
+			e++
+			if e > 10 {
+				_, err := b.SendMessage(msg.Chat.Id, mdparser.GetItalic(err.Error()).ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+				return err
+			}
 		}
 		if err != nil {
 			m += fmt.Sprintf("<i>Error: %s</i>", err.Error())
