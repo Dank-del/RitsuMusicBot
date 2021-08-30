@@ -94,7 +94,12 @@ func lyricsFromUrl(url string) ([]string, error) {
 	} else if r.StatusCode == 404 {
 		return l, fmt.Errorf("404: %s not found", url)
 	}
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			logging.Error(err.Error())
+		}
+	}(r.Body)
 
 	l = parseLyrics(r.Body)
 	if len(l) == 0 {
@@ -109,7 +114,7 @@ func GetLyrics(query string) ([]string, error) {
 		return nil, err
 	}
 
-	fmt.Println(d.Response.Hits[0].Result.URL)
+	// fmt.Println(d.Response.Hits[0].Result.URL)
 	l, err := lyricsFromUrl(d.Response.Hits[0].Result.URL)
 	if err != nil {
 		return nil, err
