@@ -1,2 +1,10 @@
+# ignore config and db files
 config.json
 *.db
+
+# ignore executable binary files
+*.exe
+lastfm-tgbot
+
+# ignore shared library files (just in-case)
+*.dll
