@@ -10,4 +10,5 @@ const (
 	helpCommand       = "help"
 	historyCommand    = "history"
 	getstatusCommand  = "getstatus"
+	lyricsCommand     = "lyrics"
 )

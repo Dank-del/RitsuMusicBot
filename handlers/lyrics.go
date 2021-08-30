@@ -1,0 +1,46 @@
+package handlers
+
+import (
+	"fmt"
+	"github.com/ALiwoto/mdparser/mdparser"
+	"github.com/PaulSonOfLars/gotgbot/v2"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	genius "gitlab.com/Dank-del/lastfm-tgbot/lyrics"
+	"strings"
+)
+
+func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
+	msg := ctx.EffectiveMessage
+	args := ctx.Args()
+	_, err = b.SendChatAction(msg.Chat.Id, "typing")
+	if err != nil {
+		return err
+	}
+	if len(args) == 1 {
+		_, err := b.SendMessage(msg.Chat.Id, mdparser.GetItalic("Query required").ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+		return err
+	}
+
+	q := strings.Join(args[1:], "")
+	var l []string
+	e := 0
+	txt := mdparser.GetBold(fmt.Sprintf("Results for %s", q)).AppendNormal("\n\n")
+	for len(l) < 5 {
+		l, err = genius.GetLyrics(q)
+		if err != nil {
+			return err
+		}
+		e++
+		if e > 10 {
+			_, err := b.SendMessage(msg.Chat.Id, mdparser.GetItalic(err.Error()).ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+			return err
+		}
+	}
+
+	for i := range l {
+		txt = txt.AppendItalic(l[i]).AppendNormal("\n")
+	}
+
+	_, err = msg.Reply(b, txt.ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+	return err
+}
