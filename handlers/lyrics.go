@@ -21,7 +21,8 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 		return err
 	}
 
-	q := strings.Join(args[1:], "")
+	q := strings.Join(args[1:], " ")
+	// fmt.Println(q)
 	var l []string
 	e := 0
 	txt := mdparser.GetBold(fmt.Sprintf("Results for %s", q)).AppendNormal("\n\n")
