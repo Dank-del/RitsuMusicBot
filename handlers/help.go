@@ -21,12 +21,25 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	txt += fmt.Sprintf("/%s - register yourself on the bot.\n", registerCommand)
 	txt += fmt.Sprintf("/%s - makes me send a list of tracks you recently played.\n", historyCommand)
 	txt += fmt.Sprintf("/%s (in reply to another user) - show recently track played by the person replied to.\n", getstatusCommand)
+	txt += fmt.Sprintf("/%s (track) - get lyrics of a track\n", lyricsCommand)
 	txt += fmt.Sprintf(`/%s - show recently played track, also works on saying "status"`, statusCommand) + "\n"
-	txt += fmt.Sprintf("/%s - get top artists on last.fm, use <code>/%s amount</code> to get exact amount", topArtistsCommand, topArtistsCommand)
+	txt += fmt.Sprintf("/%s - get top artists on last.fm, use <code>/%s amount</code> to get exact amount\n", topArtistsCommand, topArtistsCommand)
+	txt += fmt.Sprintf("/%s - makes me send an about message", aboutCommand)
 	txt += "\n\n<b>Built with ❤ by Sayan Biswas (2021)</b>"
+	var s *string
+	st := "status "
+	s = &st
+
+	var l *string
+	ly := "lyrics "
+	l = &ly
 
 	if chat.Type == "private" {
-		_, err := msg.Reply(b, txt, &gotgbot.SendMessageOpts{ParseMode: "html"})
+		_, err := msg.Reply(b, txt, &gotgbot.SendMessageOpts{ParseMode: "html",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
+				{Text: "Status", SwitchInlineQueryCurrentChat: s},
+				{Text: "Lyrics", SwitchInlineQueryCurrentChat: l},
+			}}}})
 		return err
 	} else {
 		_, err = b.SendMessage(chat.Id, "<i>Command only for PM</i>", &gotgbot.SendMessageOpts{ParseMode: "html"})

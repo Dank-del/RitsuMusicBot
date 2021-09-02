@@ -88,7 +88,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Text: "Youtube", Url: yturl},
 		}}}})
 
-	if strings.Contains(msg.Text, "lyrics") {
+	if strings.Contains(msg.Text, lyricsCommand) {
 		m = fmt.Sprintf("<b>Lyrics: %s - %s</b>\n\n", html.EscapeString(track.Artist.Name), html.EscapeString(track.Name))
 		var l []string
 		e := 0
