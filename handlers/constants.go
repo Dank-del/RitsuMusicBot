@@ -11,4 +11,6 @@ const (
 	historyCommand    = "history"
 	getstatusCommand  = "getstatus"
 	lyricsCommand     = "lyrics"
+	release           = "Beta"
+	aboutCommand      = "about"
 )
