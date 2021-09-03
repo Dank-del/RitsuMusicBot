@@ -9,7 +9,7 @@ import (
 var Data *DaemonConfig
 
 func GetConfig() error {
-	file, err := os.Open("config.json")
+	file, err := os.Open("E:\\gits\\LastFM-TG\\config.json")
 	if err != nil {
 		return err
 	}

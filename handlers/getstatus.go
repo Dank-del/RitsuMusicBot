@@ -18,7 +18,7 @@ func getStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			_, err := b.SendMessage(msg.Chat.Id, err.Error(), &gotgbot.SendMessageOpts{})
 			return err
 		} else {
-			_, err := b.SendMessage(msg.Chat.Id, d, &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+			_, err := b.SendMessage(msg.Chat.Id, d, &gotgbot.SendMessageOpts{ParseMode: "markdownv2", DisableWebPagePreview: true})
 			return err
 		}
 	} else {

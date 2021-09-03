@@ -73,23 +73,32 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(msg.From.FirstName), s)
-	m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Name), track.Name)
-	m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
+	md := mdparser.GetHyperLink(msg.From.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n") //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", msg.From.FirstName, s)).AppendNormal("\n")
+	md = md.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
+	md = md.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
 	if track.Loved == "1" {
-		m += fmt.Sprintf(", <i>Loved ♥</i>")
+		md = md.AppendNormal(", ").AppendItalic("Loved ♥")
 	}
-
+	m := md.ToString()
+	/*
+		m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(msg.From.FirstName), s)
+		m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Name), track.Name)
+		m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
+		if track.Loved == "1" {
+			m += fmt.Sprintf(", <i>Loved ♥</i>")
+		}
+	*/
 	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
 		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
 	_, err = msg.Reply(b, m,
-		&gotgbot.SendMessageOpts{ParseMode: "html", ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
+		&gotgbot.SendMessageOpts{ParseMode: "markdownv2", ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
 			{Text: "View on Last.FM", Url: track.URL},
 			{Text: "Youtube", Url: yturl},
-		}}}})
+		}}}, DisableWebPagePreview: true})
 
 	if strings.Contains(msg.Text, lyricsCommand) {
-		m = fmt.Sprintf("<b>Lyrics: %s - %s</b>\n\n", html.EscapeString(track.Artist.Name), html.EscapeString(track.Name))
+		// m = fmt.Sprintf("<b>Lyrics: %s - %s</b>\n\n", html.EscapeString(track.Artist.Name), html.EscapeString(track.Name))
+		m := mdparser.GetBold(fmt.Sprintf("Lyrics: %s - %s", track.Artist.Name, track.Name)).AppendNormal("\n\n")
 		var l []string
 		e := 0
 		for len(l) < 5 {
@@ -101,13 +110,15 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			}
 		}
 		if err != nil {
-			m += fmt.Sprintf("<i>Error: %s</i>", err.Error())
+			// m += fmt.Sprintf("<i>Error: %s</i>", err.Error())
+			m = m.AppendItalic(fmt.Sprintf("Error: %s", err.Error()))
 		} else {
 			for i := range l {
-				m += fmt.Sprintf("<i>%s</i>\n", html.EscapeString(l[i]))
+				// m += fmt.Sprintf("<i>%s</i>\n", html.EscapeString(l[i]))
+				m = m.AppendItalic(l[i]).AppendNormal("\n")
 			}
 		}
-		_, err = msg.Reply(b, m, &gotgbot.SendMessageOpts{ParseMode: "html"})
+		_, err = msg.Reply(b, m.ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
 	}
 	return err
 }
@@ -167,7 +178,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 		} else {
 			s = "was"
 		}
-		m := mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
+		m := mdparser.GetHyperLink(user.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n") //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
 		m = m.AppendItalic(i.Artist.Name).AppendNormal(" - ").AppendBold(i.Name).AppendNormal("\n")
 		m = m.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
 		if i.Loved == "1" {
@@ -183,7 +194,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 			m = m.AppendItalic(l)
 		} */
 		results = append(results, gotgbot.InlineQueryResultArticle{Id: uuid.New().String(), Title: fmt.Sprintf("%s - %s", i.Artist.Name, i.Name),
-			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
+			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2", DisableWebPagePreview: true}})
 
 		if e > 12 {
 			break
@@ -253,7 +264,7 @@ func getStatus(user *gotgbot.User) (string, error) {
 		logging.Warn(err.Error())
 		return "", err
 	}
-	m := mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
+	m := mdparser.GetHyperLink(user.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n") //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
 	m = m.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
 	m = m.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
 	if track.Loved == "1" {
