@@ -72,14 +72,14 @@ type Date struct {
 }
 
 type Image struct {
-	Size *Size  `json:"size,omitempty"`
+	Size Size   `json:"size,omitempty"`
 	Text string `json:"#text,omitempty"`
 }
 
 type Size string
 
 type LastFMUser struct {
-	User User `json:"user"`
+	User *User `json:"user"`
 }
 
 type Registered struct {

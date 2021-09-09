@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"os"
+	"runtime"
+
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"os"
-	"runtime"
 )
 
 func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -21,9 +22,9 @@ func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	txt = txt.AppendItalic("Exists for the sole reason of flexing your taste of music").AppendNormal("\n")
 	h, err := os.Hostname()
 	if err != nil {
-		txt = txt.AppendNormal("Node: ").AppendMono(fmt.Sprintf("%s", err.Error())).AppendNormal("\n")
+		txt = txt.AppendNormal("Node: ").AppendMono(err.Error()).AppendNormal("\n")
 	} else {
-		txt = txt.AppendNormal("Node: ").AppendMono(fmt.Sprintf("%s", h)).AppendNormal("\n")
+		txt = txt.AppendNormal("Node: ").AppendMono(h).AppendNormal("\n")
 	}
 	txt = txt.AppendBold("Runtime: ").AppendMono(runtime.Version()).AppendNormal("\n\n")
 	txt = txt.AppendBold("Built with ❤ by Sayan Biswas (2021)")

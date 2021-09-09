@@ -3,16 +3,19 @@ package last_fm
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+
+	"gitlab.com/Dank-del/lastfm-tgbot/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 )
 
 func GetRecentTracksByUsername(username string) (res *GetRecentTracks, err error) {
-	reqUrl := recentTracksBaseUrl + username + fmt.Sprintf("&extended=1&api_key=%s", config.Data.LastFMKey) + "&format=json"
+	reqUrl := recentTracksBaseUrl + url.QueryEscape(username) +
+		fmt.Sprintf("&extended=1&api_key=%s", config.Data.LastFMKey) + "&format=json"
 	//fmt.Println(reqUrl)
 	resp, err := http.Get(reqUrl)
 	if err != nil {
@@ -45,7 +48,8 @@ func GetRecentTracksByUsername(username string) (res *GetRecentTracks, err error
 }
 
 func GetLastFMUser(username string) (res *LastFMUser, err error) {
-	reqUrl := userBaseUrl + username + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) + "&format=json"
+	reqUrl := userBaseUrl + url.QueryEscape(username) +
+		fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) + "&format=json"
 	//logging.Info(reqUrl)
 	resp, err := http.Get(reqUrl)
 	if err != nil {
@@ -60,6 +64,7 @@ func GetLastFMUser(username string) (res *LastFMUser, err error) {
 			logging.Warn(err.Error())
 		}
 	}(resp.Body)
+
 	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err.Error())

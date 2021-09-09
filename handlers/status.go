@@ -2,6 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"html"
+	"net/url"
+	"strings"
+
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -10,9 +14,6 @@ import (
 	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 	genius "gitlab.com/Dank-del/lastfm-tgbot/lyrics"
-	"html"
-	"net/url"
-	"strings"
 )
 
 func statusFilter(msg *gotgbot.Message) bool {
@@ -140,7 +141,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	uname, err := database.GetUser(user.Id)
 	// fmt.Println(uname)
-	if uname.LastFmUsername == "" {
+	if err != nil || uname.LastFmUsername == "" {
 		m = mdparser.GetBold(user.FirstName).AppendNormal(" ").AppendItalic("haven't registered themselves on this bot yet.").AppendNormal("\n")
 		m = m.AppendBold("Please use ").AppendMono("/setusername")
 		results = append(results, gotgbot.InlineQueryResultArticle{Id: ctx.InlineQuery.Id, Title: fmt.Sprintf("%s's needs to register themselves", user.FirstName),

@@ -2,12 +2,18 @@ package handlers
 
 import (
 	"fmt"
+	"math"
+	"strconv"
+	"strings"
+
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	last_fm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 )
+
+//var historyMap map[string]interface{}
 
 func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.Message
@@ -58,8 +64,41 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			break
 		}
 	}
+
+	cb := "history_" + fuckAbs(ctx.EffectiveChat.Id) +
+		"_" + fuckAbs(ctx.EffectiveUser.Id)
+
+	kb := &gotgbot.InlineKeyboardMarkup{}
+	kb.InlineKeyboard = append(kb.InlineKeyboard, []gotgbot.InlineKeyboardButton{})
+	kb.InlineKeyboard[0] = append(kb.InlineKeyboard[0], gotgbot.InlineKeyboardButton{
+		Text:         "\u23ea",
+		CallbackData: cb + "_back",
+	})
+	kb.InlineKeyboard[0] = append(kb.InlineKeyboard[0], gotgbot.InlineKeyboardButton{
+		Text:         "\u23e9",
+		CallbackData: cb + "_next",
+	})
 	// fmt.Println(m)
 	_, err = msg.Reply(b, m.ToString(),
-		&gotgbot.SendMessageOpts{ParseMode: "markdownv2", DisableWebPagePreview: true})
+		&gotgbot.SendMessageOpts{
+			ParseMode:             "markdownv2",
+			DisableWebPagePreview: true,
+			ReplyMarkup:           kb,
+		})
 	return err
+}
+
+func fuckAbs(i int64) string {
+	return strconv.FormatInt(int64(math.Abs(float64(i))), 10)
+}
+
+//  func(cq *gotgbot.CallbackQuery)
+func historyCallBackQuery(cq *gotgbot.CallbackQuery) bool {
+	return strings.HasPrefix(cq.Data, "history_")
+}
+
+// type Response func(b *gotgbot.Bot, ctx *ext.Context) error
+func historyCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
+
+	return nil
 }
