@@ -90,9 +90,12 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	var limit int
 	limit, err = strconv.Atoi(theuser.User.Playcount)
 	if err != nil {
-		msg.Reply(b,
+		_, err := msg.Reply(b,
 			mdparser.GetItalic("failed to get your total play count").ToString(),
 			config.MdMessageOpt)
+		if err != nil {
+			return err
+		}
 		return err
 	}
 
@@ -217,13 +220,19 @@ func historyCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 	// this will reduce the high memory usage and will prevent the memory
 	// from being fucked up.
 	if thevalue == nil {
-		ctx.EffectiveMessage.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{})
+		_, err := ctx.EffectiveMessage.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{})
+		if err != nil {
+			return err
+		}
 		return nil
 	} else if thevalue.owner.Id != ctx.EffectiveUser.Id {
-		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      "this list isn't for ya",
 			ShowAlert: true,
 		})
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -249,12 +258,15 @@ func historyCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 
-	ctx.EffectiveMessage.EditText(b, thevalue.GetParsedText().ToString(),
+	_, err := ctx.EffectiveMessage.EditText(b, thevalue.GetParsedText().ToString(),
 		&gotgbot.EditMessageTextOpts{
 			ParseMode:             "markdownv2",
 			ReplyMarkup:           *ctx.EffectiveMessage.ReplyMarkup,
 			DisableWebPagePreview: true,
 		})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
