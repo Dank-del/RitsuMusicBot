@@ -148,11 +148,13 @@ func getSimpleList(tracks []last_fm.Track,
 		if e.Loved == "1" {
 			m = m.AppendItalic(" (Loved ♥)")
 		}
+
 		m = m.AppendNormal("\n")
 		if e.Album.Text != "" {
 			m = m.AppendBold("From album: ")
 			m = m.AppendItalic(fmt.Sprintf("%s\n", e.Album.Text))
 		}
+
 		if a > int(limitTracks) {
 			break
 		}
@@ -254,6 +256,7 @@ func (h *historyData) GenerateWholeList(tracks []last_fm.Track) {
 			index++
 			continue
 		}
+
 		currentList = append(currentList, t)
 	}
 
@@ -267,7 +270,7 @@ func (h *historyData) GetParsedText() mdparser.WMarkDown {
 	offset := int(index) * int(limitTracks)
 	m := getSimpleList(h.tracks[index], h.owner, offset)
 
-	m = m.AppendItalic("\n(Page " + strconv.Itoa(h.currentPage) +
+	m = m.AppendNormal(" ").AppendItalic("\n(Page " + strconv.Itoa(h.currentPage) +
 		" from " + strconv.Itoa(h.totalPages) + ")")
 	return m
 }
