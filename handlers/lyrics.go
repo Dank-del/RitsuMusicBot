@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	genius "gitlab.com/Dank-del/lastfm-tgbot/lyrics"
-	"strings"
 )
 
 func lyricsInlineFilter(q *gotgbot.InlineQuery) bool {
@@ -77,7 +79,7 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 		return err
 	}
 	if len(args) == 1 {
-		_, err := b.SendMessage(msg.Chat.Id, mdparser.GetItalic("Query required").ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+		_, err := msg.Reply(b, mdparser.GetItalic("Query required").ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
 		return err
 	}
 
@@ -89,19 +91,37 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	for len(l) < 5 {
 		l, err = genius.GetLyrics(q)
 		if err != nil {
+			errm := mdparser.GetBold("Failed due to: ").AppendItalic(err.Error())
+
+			_, err := msg.Reply(b, errm.ToString(), config.MdMessageOpt)
 			return err
 		}
+
 		e++
+
 		if e > 10 {
-			_, err := b.SendMessage(msg.Chat.Id, mdparser.GetItalic(err.Error()).ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+			m := mdparser.GetItalic("an unexpected error happened during " +
+				"fetching lyrics from API")
+			_, err := msg.Reply(b, m.ToString(), config.MdMessageOpt)
 			return err
 		}
 	}
 
+	total := len(l) - 1
 	for i := range l {
+		if len(l[i]) == 0 {
+			continue
+		} else if len(l[i]) == 1 {
+			txt = txt.AppendItalic(l[i])
+			continue
+		} else if i < total && len(l[i+1]) == 1 {
+			txt = txt.AppendItalic(l[i])
+			continue
+		}
+
 		txt = txt.AppendItalic(l[i]).AppendNormal("\n")
 	}
 
-	_, err = msg.Reply(b, txt.ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+	_, err = msg.Reply(b, txt.ToString(), config.MdMessageOpt)
 	return err
 }

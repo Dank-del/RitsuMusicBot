@@ -4,12 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/PaulSonOfLars/gotgbot/v2"
 )
 
 var Data *DaemonConfig
+var MdMessageOpt = &gotgbot.SendMessageOpts{
+	ParseMode:                "markdownv2",
+	AllowSendingWithoutReply: true,
+}
 
 func GetConfig() error {
-	file, err := os.Open("E:\\gits\\LastFM-TG\\config.json")
+	var file *os.File
+	var err error
+	if os.PathSeparator == '/' {
+		// linux config
+		file, err = os.Open("config.json")
+	} else {
+		// winhoes (I mean windows) config
+		file, err = os.Open("E:\\gits\\LastFM-TG\\config.json")
+	}
+
 	if err != nil {
 		return err
 	}
