@@ -8,14 +8,22 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 )
 
-func GetRecentTracksByUsername(username string) (res *GetRecentTracks, err error) {
+const APILimit = 1000
+
+func GetRecentTracksByUsername(username string, limit int) (res *GetRecentTracks, err error) {
+	if limit > APILimit {
+		limit = APILimit
+	}
 	reqUrl := recentTracksBaseUrl + url.QueryEscape(username) +
-		fmt.Sprintf("&extended=1&api_key=%s", config.Data.LastFMKey) + "&format=json"
+		fmt.Sprintf("&extended=1&api_key=%s", config.Data.LastFMKey) +
+		"&limit=" + strconv.Itoa(limit) +
+		"&format=json"
 	//fmt.Println(reqUrl)
 	resp, err := http.Get(reqUrl)
 	if err != nil {

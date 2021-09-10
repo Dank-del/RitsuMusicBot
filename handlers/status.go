@@ -42,7 +42,8 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 	}
-	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername)
+
+	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.Warn(err.Error())
 		return err
@@ -148,7 +149,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
 	}
 
-	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername)
+	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.Warn(err.Error())
 		return err
@@ -236,7 +237,7 @@ func getStatus(user *gotgbot.User) (string, error) {
 			return "", err
 		}
 	}
-	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername)
+	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.Warn(err.Error())
 		return "", err
