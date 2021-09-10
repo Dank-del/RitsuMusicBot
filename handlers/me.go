@@ -14,7 +14,7 @@ import (
 
 func meHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.Message
-	getusername, err := database.GetUser(msg.From.Id)
+	getusername, err := database.GetLastFMUserFromDB(msg.From.Id)
 	if err != nil {
 		_, err := msg.Reply(b, fmt.Sprintf("<i>Error: %s</i>", html.EscapeString(err.Error())), &gotgbot.SendMessageOpts{ParseMode: "html"})
 		if err != nil {

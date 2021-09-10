@@ -6,19 +6,31 @@ import (
 )
 
 type User struct {
-	UserID int64 `gorm:"primaryKey" json:"user_id"`
+	UserID         int64 `gorm:"primaryKey" json:"user_id"`
 	LastFmUsername string
 }
 
+type BotUser struct {
+	UserID      int64  `gorm:"primaryKey" json:"user_id"`
+	UserName    string `json:"user_name"`
+	ShowProfile bool   `json:"show_profile"`
+}
 
-func UpdateUser(UserID int64, LastFmUsername string) {
+func UpdateLastFMUserInDB(UserID int64, LastFmUsername string) {
 	tx := SESSION.Begin()
 	user := &User{UserID: UserID, LastFmUsername: strings.ToLower(LastFmUsername)}
 	tx.Save(user)
 	tx.Commit()
 }
 
-func GetUser(UserID int64) (u *User, err error){
+func UpdateBotUser(UserID int64, UserName string, ShowProfile bool) {
+	tx := SESSION.Begin()
+	user := BotUser{UserID: UserID, UserName: UserName, ShowProfile: ShowProfile}
+	tx.Save(user)
+	tx.Commit()
+}
+
+func GetLastFMUserFromDB(UserID int64) (u *User, err error) {
 	if SESSION == nil {
 		return nil, errors.New("cannot access to SESSION " +
 			"of db, because it's nil")
@@ -29,7 +41,37 @@ func GetUser(UserID int64) (u *User, err error){
 	return &p, nil
 }
 
-type Tiddie struct {
-	Size int64
-	Weight int64
+func GetBotUserByID(UserID int64) (u *BotUser, err error) {
+	if SESSION == nil {
+		return nil, errors.New("cannot access to SESSION " +
+			"of db, because it's nil")
+	}
+
+	p := BotUser{}
+	SESSION.Where("user_id = ?", UserID).Take(&p)
+	return &p, nil
+}
+
+func GetBotUserByUsername(UserName string) (u *BotUser, err error) {
+
+	if SESSION == nil {
+		return nil, errors.New("cannot access to SESSION " +
+			"of db, because it's nil")
+	}
+
+	p := BotUser{}
+	SESSION.Where("user_name = ?", UserName).Take(&p)
+	return &p, nil
+
+}
+
+func GetBotUserCount() (c int64) {
+	SESSION.Model(&BotUser{}).Count(&c)
+	SESSION.Model(&BotUser{}).Count(&c)
+	return c
+}
+
+func GetLastmUserCount() (c int64) {
+	SESSION.Model(&User{}).Count(&c)
+	return c
 }
