@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -23,7 +24,8 @@ const (
 	backSuffix    = "_" + backValue
 	backValue     = "b"
 
-	limitTracks float64 = 20
+	limitTracks  float64 = 20
+	sleepTimeout         = 30 * time.Minute
 )
 
 type historyData struct {
@@ -31,10 +33,35 @@ type historyData struct {
 	currentPage int
 	totalPages  int
 	owner       *gotgbot.User
+	t           time.Time
 }
 
 var historyMap map[string]*historyData
 var historyMutex *sync.Mutex = &sync.Mutex{}
+
+func checkHistoryMap() {
+	if historyMap == nil {
+		return
+	}
+
+	for {
+		time.Sleep(sleepTimeout)
+		if len(historyMap) == 0 {
+			if historyMap == nil {
+				return
+			}
+
+			continue
+		}
+		for key, value := range historyMap {
+			if time.Since(value.t) > sleepTimeout {
+				historyMutex.Lock()
+				delete(historyMap, key)
+				historyMutex.Unlock()
+			}
+		}
+	}
+}
 
 func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.Message
@@ -114,6 +141,7 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		currentPage: 1,
 		totalPages:  int(math.Ceil(float64(len(tracks)) / limitTracks)),
 		owner:       user,
+		t:           time.Now(),
 	}
 
 	thevalue.GenerateWholeList(tracks)
@@ -132,6 +160,7 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		historyMutex.Lock()
 		if historyMap == nil {
 			historyMap = make(map[string]*historyData)
+			go checkHistoryMap()
 		}
 		historyMap[key] = thevalue
 		historyMutex.Unlock()
