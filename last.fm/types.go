@@ -6,8 +6,21 @@ type GetRecentTracks struct {
 	Message      string        `json:"message,omitempty"`
 }
 
+type GetLastFmTrackResponse struct {
+	Track   TrackInfo `json:"track"`
+	Error   int       `json:"error,omitempty"`
+	Message string    `json:"message,omitempty"`
+}
+
+type Streamable struct {
+	Text      string `json:"#text,omitempty"`
+	Fulltrack string `json:"fulltrack,omitempty"`
+}
+
 type GetTopArtistsResponse struct {
-	Artists Artists `json:"artists"`
+	Artists Artists `json:"artists,omitempty"`
+	Error   int     `json:"error,omitempty"`
+	Message string  `json:"message,omitempty"`
 }
 
 type Artist struct {
@@ -25,6 +38,7 @@ type Attr struct {
 	PerPage    string `json:"perPage,omitempty"`
 	TotalPages string `json:"totalPages,omitempty"`
 	Total      string `json:"total,omitempty"`
+	Position   string `json:"position"`
 }
 type Artists struct {
 	Artist []Artist `json:"artist,omitempty"`
@@ -44,22 +58,45 @@ type RecenttracksAttr struct {
 	TotalPages string `json:"totalPages,omitempty"`
 }
 
+type TrackInfo struct {
+	Name       string     `json:"name"`
+	Mbid       string     `json:"mbid"`
+	URL        string     `json:"url"`
+	Duration   string     `json:"duration"`
+	Streamable Streamable `json:"streamable"`
+	Listeners  string     `json:"listeners"`
+	Playcount  string     `json:"playcount"`
+	Artist     Artist     `json:"artist"`
+	Album      Album      `json:"album"`
+	Toptags    Toptags    `json:"toptags"`
+	Wiki       Wiki       `json:"wiki"`
+}
+
 type Track struct {
-	Attr       *TrackAttr `json:"@attr,omitempty"`
-	Artist     *Artist    `json:"artist,omitempty"`
-	Mbid       string     `json:"mbid,omitempty"`
-	Image      []Image    `json:"image,omitempty"`
-	URL        string     `json:"url,omitempty"`
-	Streamable string     `json:"streamable,omitempty"`
-	Album      *Album     `json:"album,omitempty"`
-	Name       string     `json:"name,omitempty"`
-	Loved      string     `json:"loved,omitempty"`
-	Date       *Date      `json:"date,omitempty"`
+	Attr   *TrackAttr `json:"@attr,omitempty"`
+	Artist *Artist    `json:"artist,omitempty"`
+	Mbid   string     `json:"mbid,omitempty"`
+	Image  []Image    `json:"image,omitempty"`
+	URL    string     `json:"url,omitempty"`
+	// Streamable Streamable `json:"streamable,omitempty"`
+	Listeners string  `json:"listeners,omitempty"`
+	Playcount string  `json:"playcount,omitempty"`
+	Album     *Album  `json:"album,omitempty"`
+	Name      string  `json:"name,omitempty"`
+	Loved     string  `json:"loved,omitempty"`
+	Date      *Date   `json:"date,omitempty"`
+	Toptags   Toptags `json:"toptags,omitempty"`
+	Wiki      Wiki    `json:"wiki,omitempty"`
 }
 
 type Album struct {
-	Mbid string `json:"mbid,omitempty"`
-	Text string `json:"#text,omitempty"`
+	Mbid   string  `json:"mbid,omitempty"`
+	Text   string  `json:"#text,omitempty"`
+	Artist string  `json:"artist,omitempty"`
+	Title  string  `json:"title,omitempty"`
+	URL    string  `json:"url,omitempty"`
+	Image  []Image `json:"image,omitempty"`
+	Attr   Attr    `json:"@attr,omitempty"`
 }
 
 type TrackAttr struct {
@@ -100,4 +137,18 @@ type User struct {
 	Age        string     `json:"age"`
 	Bootstrap  string     `json:"bootstrap"`
 	Realname   string     `json:"realname"`
+}
+
+type Toptags struct {
+	Tag []Tag `json:"tag"`
+}
+type Wiki struct {
+	Published string `json:"published"`
+	Summary   string `json:"summary"`
+	Content   string `json:"content"`
+}
+
+type Tag struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
 }

@@ -55,6 +55,38 @@ func GetRecentTracksByUsername(username string, limit int) (res *GetRecentTracks
 
 }
 
+func GetLastfmTrack(artist string, track string) (res *GetLastFmTrackResponse, err error) {
+	reqUrl := getTrackInfoBaseUrl + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) +
+		fmt.Sprintf("&artist=%s&track=%s", url.QueryEscape(artist), url.QueryEscape(track)) + "&format=json"
+	resp, err := http.Get(reqUrl)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			// why can't i return anything from here ??
+			logging.Warn(err.Error())
+		}
+	}(resp.Body)
+	d, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	data := new(GetLastFmTrackResponse)
+	err = json.Unmarshal(d, &data)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return data, nil
+}
+
 func GetLastFMUser(username string) (res *LastFMUser, err error) {
 	reqUrl := userBaseUrl + url.QueryEscape(username) +
 		fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) + "&format=json"
