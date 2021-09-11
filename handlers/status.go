@@ -4,16 +4,24 @@ import (
 	"fmt"
 	"html"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/google/uuid"
+	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 	genius "gitlab.com/Dank-del/lastfm-tgbot/lyrics"
+)
+
+const (
+	statusPrefix = "st_"
+	albumText    = "Album"
+	hideText     = "Hide"
 )
 
 func statusFilter(msg *gotgbot.Message) bool {
@@ -33,6 +41,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		if err != nil {
 			return err
 		}
+
 		return nil
 	}
 
@@ -41,6 +50,8 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		if err != nil {
 			return err
 		}
+
+		return nil
 	}
 
 	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
@@ -54,13 +65,17 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		if err != nil {
 			return err
 		}
+		return nil
 	}
 
-	if d.Recenttracks == nil {
-		_, err := msg.Reply(b, "<i>You haven't scrobbed anything yet...</i>", &gotgbot.SendMessageOpts{ParseMode: "html"})
+	if d.Recenttracks == nil || len(d.Recenttracks.Track) == 0 {
+		_, err := msg.Reply(b, "<i>You haven't scrobbed anything yet...</i>",
+			&gotgbot.SendMessageOpts{ParseMode: "html"})
 		if err != nil {
 			return err
 		}
+
+		return nil
 	}
 	var s string
 	if d.Recenttracks.Track[0].Attr != nil {
@@ -68,7 +83,8 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	} else {
 		s = "was"
 	}
-	track := d.Recenttracks.Track[0]
+
+	track := &d.Recenttracks.Track[0]
 	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
 		logging.Warn(err.Error())
@@ -79,39 +95,47 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		logging.Warn(err.Error())
 		return err
 	}
+
 	var md mdparser.WMarkDown
-	switch setting.ShowProfile {
-	case true:
-		md = mdparser.GetHyperLink(msg.From.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
-	case false:
-		md = mdparser.GetBold(msg.From.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
-	default:
-		md = mdparser.GetBold(msg.From.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
-	} //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", msg.From.FirstName, s)).AppendNormal("\n")
+	var pic *string
+	if track.Image != nil {
+		pic = getPicUrl(track.Image)
+	}
+
+	if pic == nil && track.Album != nil {
+		pic = getPicUrl(track.Album.Image)
+	}
+
+	if pic == nil && track.Artist != nil {
+		pic = getPicUrl(track.Artist.Image)
+	}
+
+	hasAlbum := track.Album != nil && pic != nil
+	md = mdparser.GetNormal("\u2606 ")
+	if hasAlbum {
+		md = md.AppendHyperLink("\u2063", *pic)
+	}
+
+	if setting.ShowProfile {
+		md = md.AppendHyperLink(msg.From.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+	} else {
+		md = md.AppendBold(msg.From.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+	}
+
 	md = md.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
 	md = md.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
 	if track.Loved == "1" {
 		md = md.AppendNormal(", ").AppendItalic("Loved ♥")
 	}
-	m := md.ToString()
-	/*
-		m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(msg.From.FirstName), s)
-		m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Name), track.Name)
-		m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
-		if track.Loved == "1" {
-			m += fmt.Sprintf(", <i>Loved ♥</i>")
-		}
-	*/
-	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
-		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
-	_, err = msg.Reply(b, m,
-		&gotgbot.SendMessageOpts{ParseMode: "markdownv2", ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
-			{Text: "View on Last.FM", Url: track.URL},
-			{Text: "Youtube", Url: yturl},
-		}}}, DisableWebPagePreview: true})
+
+	_, err = msg.Reply(b, md.ToString(),
+		&gotgbot.SendMessageOpts{
+			ParseMode:             "markdownv2",
+			DisableWebPagePreview: true,
+			ReplyMarkup:           generateButtons(track, hasAlbum, msg.From.Id),
+		})
 
 	if strings.Contains(msg.Text, lyricsCommand) {
-		// m = fmt.Sprintf("<b>Lyrics: %s - %s</b>\n\n", html.EscapeString(track.Artist.Name), html.EscapeString(track.Name))
 		m := mdparser.GetBold(fmt.Sprintf("Lyrics: %s - %s", track.Artist.Name, track.Name)).AppendNormal("\n\n")
 		var l []string
 		e := 0
@@ -124,17 +148,102 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			}
 		}
 		if err != nil {
-			// m += fmt.Sprintf("<i>Error: %s</i>", err.Error())
 			m = m.AppendItalic(fmt.Sprintf("Error: %s", err.Error()))
 		} else {
 			for i := range l {
-				// m += fmt.Sprintf("<i>%s</i>\n", html.EscapeString(l[i]))
 				m = m.AppendItalic(l[i]).AppendNormal("\n")
 			}
 		}
-		_, err = msg.Reply(b, m.ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+		_, err = msg.Reply(b, m.ToString(), config.GetDefaultMdOpt())
 	}
 	return err
+}
+
+func generateButtons(track *lastfm.Track, album bool,
+	id int64) *gotgbot.InlineKeyboardMarkup {
+	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
+		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
+	var tmpmarkup gotgbot.InlineKeyboardButton
+	var count int
+	if album {
+		count = 2
+	} else {
+		count = 1
+	}
+	keyboard := make([][]gotgbot.InlineKeyboardButton, count)
+
+	// view on "Last .FM" button.
+	tmpmarkup = gotgbot.InlineKeyboardButton{
+		Text: "View on Last.FM",
+		Url:  track.URL,
+	}
+	keyboard[0] = append(keyboard[0], tmpmarkup)
+
+	tmpmarkup = gotgbot.InlineKeyboardButton{
+		Text: "Youtube",
+		Url:  yturl,
+	}
+	keyboard[0] = append(keyboard[0], tmpmarkup)
+
+	if album {
+		tmpmarkup = gotgbot.InlineKeyboardButton{
+			Text:         albumText,
+			CallbackData: statusPrefix + strconv.FormatInt(id, 10),
+		}
+		keyboard[1] = append(keyboard[1], tmpmarkup)
+	}
+
+	return &gotgbot.InlineKeyboardMarkup{
+		InlineKeyboard: keyboard,
+	}
+}
+
+//  func(cq *gotgbot.CallbackQuery)
+func statusCallBackQuery(cq *gotgbot.CallbackQuery) bool {
+	return strings.HasPrefix(cq.Data, statusPrefix)
+}
+
+// type Response func(b *gotgbot.Bot, ctx *ext.Context) error
+func statusCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
+	mystrs := strings.Split(ctx.CallbackQuery.Data, "_")
+	id, err := strconv.ParseInt(mystrs[1], 10, 64)
+	if err != nil {
+		logging.Warn(err.Error())
+		return err
+	}
+
+	if id != ctx.EffectiveUser.Id {
+		_, err = ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      "this is not for you",
+			ShowAlert: true,
+		})
+
+		if err != nil {
+			logging.Error(err.Error())
+		}
+		return err
+	}
+
+	msg := ctx.EffectiveMessage
+	preview := msg.ReplyMarkup.InlineKeyboard[1][0].Text == albumText
+	if preview {
+		msg.ReplyMarkup.InlineKeyboard[1][0].Text = hideText
+	} else {
+		msg.ReplyMarkup.InlineKeyboard[1][0].Text = albumText
+	}
+
+	_, err = msg.EditText(b, msg.Text, &gotgbot.EditMessageTextOpts{
+		Entities:              ctx.EffectiveMessage.Entities,
+		DisableWebPagePreview: !preview,
+		ReplyMarkup:           *msg.ReplyMarkup,
+	})
+
+	if err != nil {
+		logging.Error(err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func statusInlineFilter(q *gotgbot.InlineQuery) bool {
