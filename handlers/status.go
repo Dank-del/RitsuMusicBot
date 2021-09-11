@@ -26,7 +26,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil {
 		return err
 	}
-	uname, err := database.GetUser(msg.From.Id)
+	uname, err := database.GetLastFMUserFromDB(msg.From.Id)
 	if uname.LastFmUsername == "" {
 		_, err := msg.Reply(b, "<i>You haven't registered yourself on this bot yet</i>\n<b>Use /setusername</b>",
 			&gotgbot.SendMessageOpts{ParseMode: "html"})
@@ -74,8 +74,20 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		logging.Warn(err.Error())
 		return err
 	}
-
-	md := mdparser.GetHyperLink(msg.From.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n") //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", msg.From.FirstName, s)).AppendNormal("\n")
+	setting, err := database.GetBotUserByID(msg.From.Id)
+	if err != nil {
+		logging.Warn(err.Error())
+		return err
+	}
+	var md mdparser.WMarkDown
+	switch setting.ShowProfile {
+	case true:
+		md = mdparser.GetHyperLink(msg.From.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+	case false:
+		md = mdparser.GetBold(msg.From.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+	default:
+		md = mdparser.GetBold(msg.From.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+	} //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", msg.From.FirstName, s)).AppendNormal("\n")
 	md = md.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
 	md = md.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
 	if track.Loved == "1" {
@@ -140,7 +152,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 	// fmt.Println(m)
 	var results []gotgbot.InlineQueryResult
 
-	uname, err := database.GetUser(user.Id)
+	uname, err := database.GetLastFMUserFromDB(user.Id)
 	// fmt.Println(uname)
 	if err != nil || uname.LastFmUsername == "" {
 		m = mdparser.GetBold(user.FirstName).AppendNormal(" ").AppendItalic("haven't registered themselves on this bot yet.").AppendNormal("\n")
@@ -180,7 +192,21 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 		} else {
 			s = "was"
 		}
-		m := mdparser.GetHyperLink(user.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n") //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
+		setting, err := database.GetBotUserByID(user.Id)
+		if err != nil {
+			logging.Warn(err.Error())
+			return err
+		}
+
+		var m mdparser.WMarkDown
+		switch setting.ShowProfile {
+		case true:
+			m = mdparser.GetHyperLink(user.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+		case false:
+			m = mdparser.GetBold(user.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+		default:
+			m = mdparser.GetBold(user.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+		} //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
 		m = m.AppendItalic(i.Artist.Name).AppendNormal(" - ").AppendBold(i.Name).AppendNormal("\n")
 		m = m.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
 		if i.Loved == "1" {
@@ -221,7 +247,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func getStatus(user *gotgbot.User) (string, error) {
-	uname, err := database.GetUser(user.Id)
+	uname, err := database.GetLastFMUserFromDB(user.Id)
 	if uname.LastFmUsername == "" {
 		m := mdparser.GetBold(user.FirstName).AppendNormal(" ").AppendItalic("haven't registered themselves on this bot yet.").AppendNormal("\n")
 		m = m.AppendBold("Please use ").AppendMono("/setusername")
@@ -266,7 +292,21 @@ func getStatus(user *gotgbot.User) (string, error) {
 		logging.Warn(err.Error())
 		return "", err
 	}
-	m := mdparser.GetHyperLink(user.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n") //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
+	setting, err := database.GetBotUserByID(user.Id)
+	if err != nil {
+		logging.Warn(err.Error())
+		return "", err
+	}
+	var m mdparser.WMarkDown
+	switch setting.ShowProfile {
+	case true:
+		m = mdparser.GetHyperLink(user.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+	case false:
+		m = mdparser.GetBold(user.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+	default:
+		m = mdparser.GetBold(user.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
+	}
+	//mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
 	m = m.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
 	m = m.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
 	if track.Loved == "1" {

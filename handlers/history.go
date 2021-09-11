@@ -70,7 +70,7 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil {
 		return err
 	}
-	dbuser, err := database.GetUser(user.Id)
+	dbuser, err := database.GetLastFMUserFromDB(user.Id)
 	if err != nil {
 		_, err := msg.Reply(b, fmt.Sprintf("<i>Error: %s</i>", err.Error()),
 			&gotgbot.SendMessageOpts{ParseMode: "html"})

@@ -20,8 +20,9 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	txt += fmt.Sprintf("/%s - makes me send this message.\n", helpCommand)
 	txt += fmt.Sprintf("/%s - register yourself on the bot.\n", registerCommand)
 	txt += fmt.Sprintf("/%s - makes me send a list of tracks you recently played.\n", historyCommand)
-	txt += fmt.Sprintf("/%s (in reply to another user) - show recently track played by the person replied to.\n", getstatusCommand)
+	txt += fmt.Sprintf("/%s (in reply to another user) - show recently track played by the person replied to.\n", getStatusCommand)
 	txt += fmt.Sprintf("/%s (track) - get lyrics of a track\n", lyricsCommand)
+	txt += fmt.Sprintf(`/%s (yes/no) - toggle lastfm profile link in "status" reply`, setVisibilityCommand) + "\n"
 	txt += fmt.Sprintf(`/%s - show recently played track, also works on saying "status"`, statusCommand) + "\n"
 	txt += fmt.Sprintf("/%s - get top artists on last.fm, use <code>/%s amount</code> to get exact amount\n", topArtistsCommand, topArtistsCommand)
 	txt += fmt.Sprintf("/%s - makes me send an about message", aboutCommand)

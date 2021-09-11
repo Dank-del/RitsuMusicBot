@@ -20,7 +20,7 @@ func StartDatabase(botId int64) {
 	logging.Info("Database connected")
 
 	// Create tables if they don't exist
-	err = SESSION.AutoMigrate(&User{})
+	err = SESSION.AutoMigrate(&User{}, &BotUser{})
 	if err != nil {
 		log.Println(err)
 	}
