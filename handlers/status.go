@@ -158,13 +158,7 @@ func generateButtons(track *lastfm.Track, album bool,
 	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
 		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
 	var tmpmarkup gotgbot.InlineKeyboardButton
-	var count int
-	if album {
-		count = 2
-	} else {
-		count = 1
-	}
-	keyboard := make([][]gotgbot.InlineKeyboardButton, count)
+	keyboard := make([][]gotgbot.InlineKeyboardButton, 2)
 
 	// view on "Last .FM" button.
 	tmpmarkup = gotgbot.InlineKeyboardButton{
