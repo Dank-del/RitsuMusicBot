@@ -92,7 +92,7 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil {
 		_, err := msg.Reply(b,
 			mdparser.GetItalic("failed to get your total play count").ToString(),
-			config.MdMessageOpt)
+			config.GetDefaultMdOpt())
 		if err != nil {
 			return err
 		}
@@ -196,7 +196,7 @@ func getSimpleList(tracks []last_fm.Track,
 }
 
 func fuckAbs(i int64) string {
-	return strconv.FormatInt(int64(math.Abs(float64(i))), 10)
+	return strconv.FormatInt(i, 10)
 }
 
 //  func(cq *gotgbot.CallbackQuery)
@@ -288,17 +288,17 @@ func (h *historyData) GenerateWholeList(tracks []last_fm.Track) {
 	h.tracks = make([][]last_fm.Track, h.totalPages)
 	num := 0
 	index := 0
+	//whole := 0
 	for _, t := range tracks {
+		currentList = append(currentList, t)
 		num++
-		if num > int(limitTracks) {
+		if num >= int(limitTracks) {
 			h.tracks[index] = currentList
 			currentList = nil
 			num = 0
 			index++
 			continue
 		}
-
-		currentList = append(currentList, t)
 	}
 
 	if currentList != nil {

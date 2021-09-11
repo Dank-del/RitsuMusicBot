@@ -93,7 +93,7 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 		if err != nil {
 			errm := mdparser.GetBold("Failed due to: ").AppendItalic(err.Error())
 
-			_, err := msg.Reply(b, errm.ToString(), config.MdMessageOpt)
+			_, err := msg.Reply(b, errm.ToString(), config.GetDefaultMdOpt())
 			return err
 		}
 
@@ -102,7 +102,7 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 		if e > 10 {
 			m := mdparser.GetItalic("an unexpected error happened during " +
 				"fetching lyrics from API")
-			_, err := msg.Reply(b, m.ToString(), config.MdMessageOpt)
+			_, err := msg.Reply(b, m.ToString(), config.GetDefaultMdOpt())
 			return err
 		}
 	}
@@ -122,6 +122,6 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 		txt = txt.AppendItalic(l[i]).AppendNormal("\n")
 	}
 
-	_, err = msg.Reply(b, txt.ToString(), config.MdMessageOpt)
+	_, err = msg.Reply(b, txt.ToString(), config.GetDefaultMdOpt())
 	return err
 }

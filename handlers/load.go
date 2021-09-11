@@ -19,9 +19,10 @@ func LoadHandlers(d *ext.Dispatcher) {
 	lyricsCMD := handlers.NewCommand(lyricsCommand, lyricsHandler)
 	lyricsinl := handlers.NewInlineQuery(lyricsInlineFilter, lyricsInline)
 	aboutCMD := handlers.NewCommand(aboutCommand, aboutHandler)
-	historyCB := handlers.NewCallback(historyCallBackQuery, historyCallBackResponse)
-	logMsg := handlers.NewMessage(logUserFilter, logUser)
 	setVisibilityCMD := handlers.NewCommand(setVisibilityCommand, setVisibilityHandler)
+	historyCB := handlers.NewCallback(historyCallBackQuery, historyCallBackResponse)
+	statusCB := handlers.NewCallback(statusCallBackQuery, statusCallBackResponse)
+	logMsg := handlers.NewMessage(logUserFilter, logUser)
 	d.AddHandler(startCMD)
 	d.AddHandler(helpCMD)
 	d.AddHandler(statusMsg)
@@ -37,6 +38,6 @@ func LoadHandlers(d *ext.Dispatcher) {
 	d.AddHandler(aboutCMD)
 	d.AddHandler(setVisibilityCMD)
 	d.AddHandler(historyCB)
+	d.AddHandler(statusCB)
 	d.AddHandler(logMsg)
-
 }
