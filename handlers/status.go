@@ -18,12 +18,6 @@ import (
 	genius "gitlab.com/Dank-del/lastfm-tgbot/lyrics"
 )
 
-const (
-	statusPrefix = "st_"
-	albumText    = "Album"
-	hideText     = "Hide"
-)
-
 func statusFilter(msg *gotgbot.Message) bool {
 	return strings.HasPrefix(strings.ToLower(msg.Text), statusMessage)
 }
@@ -111,7 +105,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	hasAlbum := track.Album != nil && pic != nil
-	md = mdparser.GetNormal("\u2606 ")
+	md = mdparser.GetNormal("🎧 ")
 	if hasAlbum {
 		md = md.AppendHyperLink("\u2063", *pic)
 	}
@@ -188,10 +182,18 @@ func generateButtons(track *lastfm.Track, album bool,
 	if album {
 		tmpmarkup = gotgbot.InlineKeyboardButton{
 			Text:         albumText,
-			CallbackData: statusPrefix + strconv.FormatInt(id, 10),
+			CallbackData: albumPrefix + strconv.FormatInt(id, 10),
 		}
 		keyboard[1] = append(keyboard[1], tmpmarkup)
 	}
+
+	tdatabtn := gotgbot.InlineKeyboardButton{
+		Text: "Track info",
+		CallbackData: fmt.Sprintf("%s_%s_%s_e", tdataPrefix,
+			url.QueryEscape(track.Artist.Name), url.QueryEscape(track.Name)),
+	}
+
+	keyboard[1] = append(keyboard[1], tdatabtn)
 
 	return &gotgbot.InlineKeyboardMarkup{
 		InlineKeyboard: keyboard,
@@ -199,12 +201,40 @@ func generateButtons(track *lastfm.Track, album bool,
 }
 
 //  func(cq *gotgbot.CallbackQuery)
-func statusCallBackQuery(cq *gotgbot.CallbackQuery) bool {
-	return strings.HasPrefix(cq.Data, statusPrefix)
+func albumCallBackQuery(cq *gotgbot.CallbackQuery) bool {
+	return strings.HasPrefix(cq.Data, albumPrefix)
+}
+
+//  func(cq *gotgbot.CallbackQuery)
+func tDataCallBackQuery(cq *gotgbot.CallbackQuery) bool {
+	return strings.HasPrefix(cq.Data, tdataPrefix)
+}
+
+func tdataCallbackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
+	d := strings.Split(ctx.CallbackQuery.Data, "_")
+	artist, _ := url.QueryUnescape(d[2])
+	track, _ := url.QueryUnescape(d[3])
+	r, err := lastfm.GetLastfmTrack(artist, track)
+	if err != nil {
+		logging.Error(err.Error())
+		return err
+	}
+	var txt string
+	if r.Error != 0 {
+		txt = r.Message
+	} else {
+		if r.Track.Wiki.Summary != "" {
+			txt = r.Track.Wiki.Summary
+		} else {
+			txt = "No summary for this track."
+		}
+	}
+	_, err = b.AnswerCallbackQuery(ctx.CallbackQuery.Id, &gotgbot.AnswerCallbackQueryOpts{Text: txt, ShowAlert: true})
+	return err
 }
 
 // type Response func(b *gotgbot.Bot, ctx *ext.Context) error
-func statusCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
+func albumCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 	mystrs := strings.Split(ctx.CallbackQuery.Data, "_")
 	id, err := strconv.ParseInt(mystrs[1], 10, 64)
 	if err != nil {
@@ -243,7 +273,8 @@ func statusCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	return nil
+	_, err = b.AnswerCallbackQuery(ctx.CallbackQuery.Id, &gotgbot.AnswerCallbackQueryOpts{Text: "Toggled."})
+	return err
 }
 
 func statusInlineFilter(q *gotgbot.InlineQuery) bool {

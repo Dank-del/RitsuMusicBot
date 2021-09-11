@@ -15,3 +15,10 @@ const (
 	aboutCommand         = "about"
 	setVisibilityCommand = "visible"
 )
+
+const (
+	albumPrefix = "st_"
+	albumText   = "Album"
+	hideText    = "Hide"
+	tdataPrefix = "tdata_"
+)
