@@ -9,9 +9,17 @@ import (
 )
 
 var Data *DaemonConfig
-var MdMessageOpt = &gotgbot.SendMessageOpts{
+var mdMessageOpt = &gotgbot.SendMessageOpts{
 	ParseMode:                "markdownv2",
 	AllowSendingWithoutReply: true,
+}
+
+func GetDefaultMdOpt() *gotgbot.SendMessageOpts {
+	if mdMessageOpt.ReplyToMessageId != 0 {
+		mdMessageOpt.ReplyToMessageId = 0
+	}
+
+	return mdMessageOpt
 }
 
 func GetConfig() error {

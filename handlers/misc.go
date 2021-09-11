@@ -2,15 +2,16 @@ package handlers
 
 import (
 	"fmt"
+	"os"
+	"runtime"
+	"strconv"
+	"strings"
+
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
-	"os"
-	"runtime"
-	"strconv"
-	"strings"
 )
 
 func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -78,20 +79,20 @@ func setVisibilityHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	case "yes":
 		database.UpdateBotUser(user.Id, user.Username, true)
 		_, err := msg.Reply(b, mdparser.GetItalic(`Success, your profile will now be visible on "status".`).ToString(),
-			config.MdMessageOpt)
+			config.GetDefaultMdOpt())
 		if err != nil {
 			return err
 		}
 	case "no":
 		database.UpdateBotUser(user.Id, user.Username, false)
 		_, err := msg.Reply(b, mdparser.GetItalic(`Success, your profile won't be visible on "status" anymore.`).ToString(),
-			config.MdMessageOpt)
+			config.GetDefaultMdOpt())
 		if err != nil {
 			return err
 		}
 	default:
 		_, err := msg.Reply(b, mdparser.GetItalic(`Expected Yes/No, received `).AppendMono(args[1]).ToString(),
-			config.MdMessageOpt)
+			config.GetDefaultMdOpt())
 		if err != nil {
 			return err
 		}
