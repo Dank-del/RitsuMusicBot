@@ -4,6 +4,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 )
 
 func getStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -25,7 +26,7 @@ func getStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			if config.Data.IsSudo(msg.From.Id) {
 				status := config.Limiter.GetStatus(user.Id)
 				if status != nil && status.IsLimited() {
-					d = d.AppendItalic("\n\n>This user is limited since: " +
+					d = d.AppendNormal("\n\n").AppendItalic(">This user is limited since: " +
 						status.Last.String())
 				}
 			}
@@ -33,6 +34,10 @@ func getStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 				ParseMode:             "markdownv2",
 				DisableWebPagePreview: true,
 			})
+
+			if err != nil {
+				logging.Error(err.Error())
+			}
 			return err
 		}
 	} else {
