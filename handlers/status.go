@@ -18,6 +18,8 @@ import (
 	genius "gitlab.com/Dank-del/lastfm-tgbot/lyrics"
 )
 
+var tdatastore map[string]string = make(map[string]string)
+
 func statusFilter(msg *gotgbot.Message) bool {
 	return strings.HasPrefix(strings.ToLower(msg.Text), statusMessage)
 }
@@ -186,11 +188,13 @@ func generateButtons(track *lastfm.Track, album bool,
 		}
 		keyboard[1] = append(keyboard[1], tmpmarkup)
 	}
+	cb := fmt.Sprintf("tdata_%s", uuid.New().String())
+	tdatastore[cb] = fmt.Sprintf("%s_%s_%s_e", tdataPrefix,
+		url.QueryEscape(track.Artist.Name), url.QueryEscape(track.Name))
 
 	tdatabtn := gotgbot.InlineKeyboardButton{
-		Text: "Track info",
-		CallbackData: fmt.Sprintf("%s_%s_%s_e", tdataPrefix,
-			url.QueryEscape(track.Artist.Name), url.QueryEscape(track.Name)),
+		Text:         "Track info",
+		CallbackData: cb,
 	}
 
 	keyboard[1] = append(keyboard[1], tdatabtn)
@@ -211,26 +215,32 @@ func tDataCallBackQuery(cq *gotgbot.CallbackQuery) bool {
 }
 
 func tdataCallbackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
-	d := strings.Split(ctx.CallbackQuery.Data, "_")
-	artist, _ := url.QueryUnescape(d[2])
-	track, _ := url.QueryUnescape(d[3])
-	r, err := lastfm.GetLastfmTrack(artist, track)
-	if err != nil {
-		logging.Error(err.Error())
+	// data := tdatastore[ctx.CallbackQuery.Data]
+	if val, ok := tdatastore[ctx.CallbackQuery.Data]; ok {
+		d := strings.Split(val, "_")
+		artist, _ := url.QueryUnescape(d[2])
+		track, _ := url.QueryUnescape(d[3])
+		r, err := lastfm.GetLastfmTrack(artist, track)
+		if err != nil {
+			logging.Error(err.Error())
+			return err
+		}
+		var txt string
+		if r.Error != 0 {
+			txt = r.Message
+		} else {
+			if r.Track.Wiki.Summary != "" {
+				txt = r.Track.Wiki.Summary
+			} else {
+				txt = "No summary for this track."
+			}
+		}
+		_, err = b.AnswerCallbackQuery(ctx.CallbackQuery.Id, &gotgbot.AnswerCallbackQueryOpts{Text: txt, ShowAlert: true})
 		return err
 	}
-	var txt string
-	if r.Error != 0 {
-		txt = r.Message
-	} else {
-		if r.Track.Wiki.Summary != "" {
-			txt = r.Track.Wiki.Summary
-		} else {
-			txt = "No summary for this track."
-		}
-	}
-	_, err = b.AnswerCallbackQuery(ctx.CallbackQuery.Id, &gotgbot.AnswerCallbackQueryOpts{Text: txt, ShowAlert: true})
+	_, err := b.AnswerCallbackQuery(ctx.CallbackQuery.Id, &gotgbot.AnswerCallbackQueryOpts{Text: "I don't know what this does.", ShowAlert: true})
 	return err
+
 }
 
 // type Response func(b *gotgbot.Bot, ctx *ext.Context) error
