@@ -1,5 +1,9 @@
 {
-  "bot_token": "",
-  "last_fm_key": "",
-  "genius_api_key": ""
+    "bot_token": "",
+    "last_fm_key": "",
+    "genius_api_key": "",
+    "sudo_users": [
+        895373440,
+        1341091260
+    ]
 }

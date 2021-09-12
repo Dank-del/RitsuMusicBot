@@ -3,6 +3,7 @@ module gitlab.com/Dank-del/lastfm-tgbot
 go 1.17
 
 require (
+	github.com/gotgbot/ratelimiter v1.0.1
 	github.com/ALiwoto/mdparser v1.0.4
 	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.1
 	github.com/google/uuid v1.3.0

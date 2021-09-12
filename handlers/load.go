@@ -1,11 +1,23 @@
 package handlers
 
 import (
+	"time"
+
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/gotgbot/ratelimiter/ratelimiter"
+	"gitlab.com/Dank-del/lastfm-tgbot/config"
 )
 
 func LoadHandlers(d *ext.Dispatcher) {
+	config.Limiter = ratelimiter.NewLimiter(d, false, false)
+	config.Limiter.ConsiderUser = true
+	config.Limiter.IgnoreMediaGroup = true
+	config.Limiter.SetFloodWaitTime(6 * time.Second) // 6 messages per 15 seconds
+	config.Limiter.SetMaxMessageCount(15)            // 6 messages per 15 seconds
+	config.Limiter.AddExceptionID(config.Data.SudoUsers...)
+	config.Limiter.Start()
+
 	startCMD := handlers.NewCommand(startCommand, startHandler)
 	helpCMD := handlers.NewCommand(helpCommand, helpHandler)
 	statusMsg := handlers.NewMessage(statusFilter, statusHandler)
