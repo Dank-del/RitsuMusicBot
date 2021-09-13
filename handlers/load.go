@@ -23,6 +23,7 @@ func LoadHandlers(d *ext.Dispatcher) {
 	historyCB := handlers.NewCallback(historyCallBackQuery, historyCallBackResponse)
 	statusCB := handlers.NewCallback(albumCallBackQuery, albumCallBackResponse)
 	tdataCB := handlers.NewCallback(tDataCallBackQuery, tdataCallbackResponse)
+	linkMsg := handlers.NewMessage(msgLinkFilter, odesliMessageHandler)
 	logMsg := handlers.NewMessage(logUserFilter, logUser)
 	d.AddHandler(startCMD)
 	d.AddHandler(helpCMD)
@@ -41,5 +42,6 @@ func LoadHandlers(d *ext.Dispatcher) {
 	d.AddHandler(historyCB)
 	d.AddHandler(statusCB)
 	d.AddHandler(tdataCB)
+	d.AddHandler(linkMsg)
 	d.AddHandler(logMsg)
 }
