@@ -2,10 +2,15 @@ github.com/ALiwoto/StrongStringGo v1.0.3 h1:DQHn3sf5BTKlnoe24dIiFeFGoPfCGqmlyGf6
 github.com/ALiwoto/StrongStringGo v1.0.3/go.mod h1:IRcHbxBe809Mt3qA77FmBUrVhRpbRqAAz/WLkreIyzY=
 github.com/ALiwoto/mdparser v1.0.4 h1:mngDDKVuAaq1+tdx/kkUct3FdJ9m/OH1EolATIPukHs=
 github.com/ALiwoto/mdparser v1.0.4/go.mod h1:A5uGV5CGVB0sxKgvu1USLbfYLc5UgwYCRrR+TA9LsI0=
+github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-beta15/go.mod h1:r815fYWTudnU9JhtsJAxUtuV7QrSgKpChJkfTSMFpfg=
 github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.1 h1:TDob1M3ljHPSZQyPFOZ6ZjOfF4GoYtDA+lfTzd+8Yew=
 github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.1/go.mod h1:r815fYWTudnU9JhtsJAxUtuV7QrSgKpChJkfTSMFpfg=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/gotgbot/ratelimiter v1.0.0 h1:as2mdfNxKEC0G2hD++sVETu35ta0ydLdan5+iafoyNA=
+github.com/gotgbot/ratelimiter v1.0.0/go.mod h1:gWkYjL/ifGBjnv30xkUradp64QzdzhOtwivK8pz/Ud8=
+github.com/gotgbot/ratelimiter v1.0.1 h1:Js7WoewXU7LpTwIUG4pvvrV9vbqd5kOgit7W5WRaXzA=
+github.com/gotgbot/ratelimiter v1.0.1/go.mod h1:gWkYjL/ifGBjnv30xkUradp64QzdzhOtwivK8pz/Ud8=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.1/go.mod h1:d3SSVoowX0Lcu0IBviAWJpolVfI5UJVZZ7cO71lE/z8=

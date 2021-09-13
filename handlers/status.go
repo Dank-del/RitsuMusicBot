@@ -160,13 +160,7 @@ func generateButtons(track *lastfm.Track, album bool,
 	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
 		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
 	var tmpmarkup gotgbot.InlineKeyboardButton
-	var count int
-	if album {
-		count = 2
-	} else {
-		count = 1
-	}
-	keyboard := make([][]gotgbot.InlineKeyboardButton, count)
+	keyboard := make([][]gotgbot.InlineKeyboardButton, 2)
 
 	// view on "Last .FM" button.
 	tmpmarkup = gotgbot.InlineKeyboardButton{
@@ -323,7 +317,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
 	}
 
-	if d.Recenttracks == nil {
+	if d.Recenttracks == nil || len(d.Recenttracks.Track) == 0 {
 		m = mdparser.GetItalic("No tracks were being played.")
 		results = append(results, gotgbot.InlineQueryResultArticle{Id: ctx.InlineQuery.Id, Title: fmt.Sprintf("%s haven't played anything yet.", user.FirstName),
 			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
@@ -396,40 +390,42 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 
 }
 
-func getStatus(user *gotgbot.User) (string, error) {
+func getStatus(user *gotgbot.User) (mdparser.WMarkDown, error) {
 	uname, err := database.GetLastFMUserFromDB(user.Id)
 	if uname.LastFmUsername == "" {
 		m := mdparser.GetBold(user.FirstName).AppendNormal(" ").AppendItalic("haven't registered themselves on this bot yet.").AppendNormal("\n")
 		m = m.AppendBold("Please use ").AppendMono("/setusername")
-		return m.ToString(), err
+		return m, err
 	}
 	// fmt.Println(err)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if err != nil {
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 	}
 	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.Warn(err.Error())
-		return "", err
+		return nil, err
 	}
 
 	if d.Error != 0 {
 		if err != nil {
-			return d.Message, err
+			logging.Warn(err.Error())
+			return nil, err
 		}
 	}
 
-	if d.Recenttracks == nil {
+	if d.Recenttracks == nil || len(d.Recenttracks.Track) == 0 {
 		if err != nil {
-			return mdparser.GetItalic("You haven't scrobbed anything yet...").ToString(), err
+			return mdparser.GetItalic("You haven't scrobbed anything yet..."), err
 		}
 	}
+
 	var s string
 	if d.Recenttracks.Track[0].Attr != nil {
 		s = "is now"
@@ -440,34 +436,26 @@ func getStatus(user *gotgbot.User) (string, error) {
 	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
 		logging.Warn(err.Error())
-		return "", err
+		return nil, err
 	}
+
 	setting, err := database.GetBotUserByID(user.Id)
 	if err != nil {
 		logging.Warn(err.Error())
-		return "", err
+		return nil, err
 	}
 	var m mdparser.WMarkDown
-	switch setting.ShowProfile {
-	case true:
+	if setting.ShowProfile {
 		m = mdparser.GetHyperLink(user.FirstName, lfmUser.User.URL).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
-	case false:
-		m = mdparser.GetBold(user.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
-	default:
+	} else {
 		m = mdparser.GetBold(user.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
 	}
-	//mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
+
 	m = m.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
 	m = m.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
 	if track.Loved == "1" {
 		m = m.AppendNormal(", ").AppendItalic("Loved ♥")
 	}
-	/*
-		m := fmt.Sprintf("%s %s listening to\n", html.EscapeString(user.FirstName), s)
-		m += fmt.Sprintf("<i>%s</i> - <b>%s\n</b>", html.EscapeString(track.Artist.Name), track.Name)
-		m += fmt.Sprintf("<i>%s total plays</i>", lfmUser.User.Playcount)
-		if track.Loved == "1" {
-			m += fmt.Sprintf(", <i>Loved ♥</i>")
-		}*/
-	return m.ToString(), err
+
+	return m, err
 }
