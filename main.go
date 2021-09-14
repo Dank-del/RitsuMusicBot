@@ -8,33 +8,45 @@ import (
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	"gitlab.com/Dank-del/lastfm-tgbot/handlers"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
+	"go.uber.org/zap"
+	"log"
 	"net/http"
 )
 
 func main() {
+	loggerMgr := logging.InitZapLog()
+	zap.ReplaceGlobals(loggerMgr)
+	defer func(loggerMgr *zap.Logger) {
+		err := loggerMgr.Sync()
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}(loggerMgr) // flushes buffer, if any
+	Logger := loggerMgr.Sugar()
+	logging.SUGARED = loggerMgr.Sugar()
 	err := config.GetConfig()
 	if err != nil {
-		logging.Error(err.Error())
+		Logger.Error(err.Error())
 	}
-	logging.Info("Starting daemon..")
+	logging.SUGARED.Info("Starting daemon..")
 	b, err := gotgbot.NewBot(config.Data.BotToken, &gotgbot.BotOpts{
 		Client:      http.Client{},
 		GetTimeout:  gotgbot.DefaultGetTimeout,
 		PostTimeout: gotgbot.DefaultPostTimeout,
 	})
-	logging.Info(fmt.Sprintf("GetTimeout %s", gotgbot.DefaultGetTimeout))
-	logging.Info(fmt.Sprintf("PostTimeout %s", gotgbot.DefaultPostTimeout))
+	logging.SUGARED.Info(fmt.Sprintf("GetTimeout %s", gotgbot.DefaultGetTimeout))
+	logging.SUGARED.Info(fmt.Sprintf("PostTimeout %s", gotgbot.DefaultPostTimeout))
 	if err != nil {
-		logging.Error(err.Error())
+		logging.SUGARED.Error(err.Error())
 	}
 	updater := ext.NewUpdater(nil)
 	dispatcher := updater.Dispatcher
 	handlers.LoadHandlers(dispatcher)
 	err = updater.StartPolling(b, &ext.PollingOpts{DropPendingUpdates: true})
 	if err != nil {
-		logging.Error(fmt.Sprintf("Failed to start polling due to %s", err.Error()))
+		logging.SUGARED.Error(fmt.Sprintf("Failed to start polling due to %s", err.Error()))
 	}
 	database.StartDatabase(b.Id)
-	logging.Info(fmt.Sprintf("%s has started | ID: %d", b.Username, b.Id))
+	logging.SUGARED.Info(fmt.Sprintf("%s has started | ID: %d", b.Username, b.Id))
 	updater.Idle()
 }

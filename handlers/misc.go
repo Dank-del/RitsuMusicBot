@@ -2,16 +2,16 @@ package handlers
 
 import (
 	"fmt"
-	"os"
-	"runtime"
-	"strconv"
-	"strings"
-
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
+	"gitlab.com/Dank-del/lastfm-tgbot/logging"
+	"os"
+	"runtime"
+	"strconv"
+	"strings"
 )
 
 func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -94,6 +94,32 @@ func setVisibilityHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		_, err := msg.Reply(b, mdparser.GetItalic(`Expected Yes/No, received `).AppendMono(args[1]).ToString(),
 			config.GetDefaultMdOpt())
 		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func uploadDatabase(b *gotgbot.Bot, ctx *ext.Context) error {
+	msg := ctx.Message
+	user := msg.From
+	if config.Data.IsSudo(user.Id) {
+		txt := mdparser.GetBold("Database backup for ").AppendMention(b.FirstName, b.Id).AppendNormal("\n")
+		// txt = txt.AppendItalic("Exported on: ").AppendItalic(time.Now().Local().String())
+		_, err := b.SendDocument(msg.Chat.Id, fmt.Sprintf("%d.db", b.Id), &gotgbot.SendDocumentOpts{Caption: txt.ToString(), ParseMode: "markdownv2"})
+		if err != nil {
+			// logging.SUGARED.Error(err.Error())
+			_, err := msg.Reply(b, mdparser.GetItalic(err.Error()).ToString(), config.GetDefaultMdOpt())
+			if err != nil {
+				logging.SUGARED.Errorf(err.Error())
+				return err
+			}
+			return err
+		}
+	} else {
+		_, err := b.SendMessage(msg.Chat.Id, mdparser.GetItalic("Get the fuck away from me..").ToString(), config.GetDefaultMdOpt())
+		if err != nil {
+			logging.SUGARED.Error(err.Error())
 			return err
 		}
 	}

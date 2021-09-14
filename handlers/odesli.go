@@ -27,11 +27,11 @@ func odesliMessageHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	d, err := odesli.GetLinks(msg.Text)
 	if err != nil {
-		logging.Error(err.Error())
+		logging.SUGARED.Error(err.Error())
 		return err
 	}
 	if d.Code != "" {
-		logging.Error(d.Code)
+		logging.SUGARED.Error(d.Code)
 		return errors.New(d.Code)
 	}
 	txt := mdparser.GetUserMention(msg.From.FirstName, msg.From.Id).AppendBold(" sent").AppendNormal("\n\n")
@@ -84,7 +84,7 @@ func odesliMessageHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	// print(txt.ToString())
 	_, err = msg.Reply(b, txt.ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2", DisableWebPagePreview: true})
 	if err != nil {
-		logging.Error(err.Error())
+		logging.SUGARED.Error(err.Error())
 		return err
 	}
 	return nil

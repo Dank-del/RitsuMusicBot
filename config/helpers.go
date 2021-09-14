@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
+	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 	"os"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -49,7 +49,7 @@ func GetConfig() error {
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&Data)
 	if err != nil {
-		fmt.Println("Error in parsing config:", err)
+		logging.SUGARED.Errorf("Error in parsing config: %s", err)
 	}
 
 	return err

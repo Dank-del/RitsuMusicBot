@@ -52,7 +52,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
-		logging.Warn(err.Error())
+		logging.SUGARED.Warn(err.Error())
 		return err
 	}
 
@@ -83,12 +83,12 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	track := &d.Recenttracks.Track[0]
 	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
-		logging.Warn(err.Error())
+		logging.SUGARED.Warn(err.Error())
 		return err
 	}
 	setting, err := database.GetBotUserByID(msg.From.Id)
 	if err != nil {
-		logging.Warn(err.Error())
+		logging.SUGARED.Warn(err.Error())
 		return err
 	}
 
@@ -216,7 +216,7 @@ func tdataCallbackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 		track, _ := url.QueryUnescape(d[3])
 		r, err := lastfm.GetLastfmTrack(artist, track)
 		if err != nil {
-			logging.Error(err.Error())
+			logging.SUGARED.Error(err.Error())
 			return err
 		}
 		var txt string
@@ -242,7 +242,7 @@ func albumCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 	mystrs := strings.Split(ctx.CallbackQuery.Data, "_")
 	id, err := strconv.ParseInt(mystrs[1], 10, 64)
 	if err != nil {
-		logging.Warn(err.Error())
+		logging.SUGARED.Warn(err.Error())
 		return err
 	}
 
@@ -253,7 +253,7 @@ func albumCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 		})
 
 		if err != nil {
-			logging.Error(err.Error())
+			logging.SUGARED.Error(err.Error())
 		}
 		return err
 	}
@@ -273,7 +273,7 @@ func albumCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 	})
 
 	if err != nil {
-		logging.Error(err.Error())
+		logging.SUGARED.Error(err.Error())
 		return err
 	}
 
@@ -307,7 +307,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
-		logging.Warn(err.Error())
+		logging.SUGARED.Warn(err.Error())
 		return err
 	}
 
@@ -325,7 +325,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
-		logging.Warn(err.Error())
+		logging.SUGARED.Warn(err.Error())
 		return err
 	}
 
@@ -338,7 +338,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		setting, err := database.GetBotUserByID(user.Id)
 		if err != nil {
-			logging.Warn(err.Error())
+			logging.SUGARED.Warn(err.Error())
 			return err
 		}
 
@@ -383,7 +383,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	_, err = query.Answer(b, results, &gotgbot.AnswerInlineQueryOpts{IsPersonal: true})
 	if err != nil {
-		logging.Error(err.Error())
+		logging.SUGARED.Error(err.Error())
 		return err
 	}
 	return nil
@@ -409,13 +409,13 @@ func getStatus(user *gotgbot.User) (mdparser.WMarkDown, error) {
 	}
 	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
-		logging.Warn(err.Error())
+		logging.SUGARED.Warn(err.Error())
 		return nil, err
 	}
 
 	if d.Error != 0 {
 		if err != nil {
-			logging.Warn(err.Error())
+			logging.SUGARED.Warn(err.Error())
 			return nil, err
 		}
 	}
@@ -435,13 +435,13 @@ func getStatus(user *gotgbot.User) (mdparser.WMarkDown, error) {
 	track := d.Recenttracks.Track[0]
 	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
-		logging.Warn(err.Error())
+		logging.SUGARED.Warn(err.Error())
 		return nil, err
 	}
 
 	setting, err := database.GetBotUserByID(user.Id)
 	if err != nil {
-		logging.Warn(err.Error())
+		logging.SUGARED.Warn(err.Error())
 		return nil, err
 	}
 	var m mdparser.WMarkDown

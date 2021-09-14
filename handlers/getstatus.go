@@ -36,7 +36,7 @@ func getStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			})
 
 			if err != nil {
-				logging.Error(err.Error())
+				logging.SUGARED.Error(err.Error())
 			}
 			return err
 		}

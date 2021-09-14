@@ -28,7 +28,7 @@ func search(query string) (res *SearchResult, err error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			logging.Error(err.Error())
+			logging.SUGARED.Error(err.Error())
 		}
 	}(resp.Body)
 
@@ -107,7 +107,7 @@ func lyricsFromUrl(url string) ([]string, error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			logging.Error(err.Error())
+			logging.SUGARED.Error(err.Error())
 		}
 	}(r.Body)
 

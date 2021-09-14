@@ -35,7 +35,7 @@ func GetRecentTracksByUsername(username string, limit int) (res *GetRecentTracks
 		err := Body.Close()
 		if err != nil {
 			// why can't i return anything from here ??
-			logging.Warn(err.Error())
+			logging.SUGARED.Warn(err.Error())
 		}
 	}(resp.Body)
 	d, err := ioutil.ReadAll(resp.Body)
@@ -68,7 +68,7 @@ func GetLastfmTrack(artist string, track string) (res *GetLastFmTrackResponse, e
 		err := Body.Close()
 		if err != nil {
 			// why can't i return anything from here ??
-			logging.Warn(err.Error())
+			logging.SUGARED.Warn(err.Error())
 		}
 	}(resp.Body)
 	d, err := ioutil.ReadAll(resp.Body)
@@ -101,7 +101,7 @@ func GetLastFMUser(username string) (res *LastFMUser, err error) {
 		err := Body.Close()
 		if err != nil {
 			// why can't i return anything from here ??
-			logging.Warn(err.Error())
+			logging.SUGARED.Warn(err.Error())
 		}
 	}(resp.Body)
 
@@ -134,7 +134,7 @@ func GetTopArtists() (res *GetTopArtistsResponse, err error) {
 		err := Body.Close()
 		if err != nil {
 			// why can't i return anything from here ??
-			logging.Warn(err.Error())
+			logging.SUGARED.Warn(err.Error())
 		}
 	}(resp.Body)
 	d, err := ioutil.ReadAll(resp.Body)

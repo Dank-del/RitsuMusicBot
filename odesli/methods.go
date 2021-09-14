@@ -21,7 +21,7 @@ func GetLinks(url string) (r *OdesliResponse, err error) {
 		err := Body.Close()
 		if err != nil {
 			// why can't i return anything from here ??
-			logging.Warn(err.Error())
+			logging.SUGARED.Warn(err.Error())
 		}
 	}(resp.Body)
 	d, err := ioutil.ReadAll(resp.Body)
