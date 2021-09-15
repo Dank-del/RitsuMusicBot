@@ -56,6 +56,8 @@ func LoadHandlers(d *ext.Dispatcher) {
 	d.AddHandler(statusCB)
 	d.AddHandler(tdataCB)
 	d.AddHandler(uploadDBcmd)
+	d.Error = errorHandler
+	d.Panic = panicHandler
 	d.AddHandler(linkMsg)
 	d.AddHandler(logMsg)
 }
