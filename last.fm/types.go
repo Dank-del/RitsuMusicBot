@@ -78,17 +78,17 @@ type RecenttracksAttr struct {
 }
 
 type TrackInfo struct {
-	Name       string     `json:"name"`
-	Mbid       string     `json:"mbid"`
-	URL        string     `json:"url"`
-	Duration   string     `json:"duration"`
-	Streamable Streamable `json:"streamable"`
-	Listeners  string     `json:"listeners"`
-	Playcount  string     `json:"playcount"`
-	Artist     Artist     `json:"artist"`
-	Album      Album      `json:"album"`
-	Toptags    Toptags    `json:"toptags"`
-	Wiki       Wiki       `json:"wiki"`
+	Name       string      `json:"name"`
+	Mbid       string      `json:"mbid"`
+	URL        string      `json:"url"`
+	Duration   string      `json:"duration"`
+	Streamable *Streamable `json:"streamable"`
+	Listeners  string      `json:"listeners"`
+	Playcount  string      `json:"playcount"`
+	Artist     *Artist     `json:"artist"`
+	Album      *Album      `json:"album"`
+	Toptags    *Toptags    `json:"toptags"`
+	Wiki       *Wiki       `json:"wiki"`
 }
 
 type Track struct {
@@ -98,15 +98,15 @@ type Track struct {
 	Image  []Image    `json:"image,omitempty"`
 	URL    string     `json:"url,omitempty"`
 	// Streamable Streamable `json:"streamable,omitempty"`
-	Listeners string  `json:"listeners,omitempty"`
-	Playcount string  `json:"playcount,omitempty"`
-	Album     *Album  `json:"album,omitempty"`
-	Name      string  `json:"name,omitempty"`
-	Loved     string  `json:"loved,omitempty"`
-	Date      *Date   `json:"date,omitempty"`
-	Toptags   Toptags `json:"toptags,omitempty"`
-	Wiki      Wiki    `json:"wiki,omitempty"`
-	Duration  string  `json:"duration,omitempty"`
+	Listeners string   `json:"listeners,omitempty"`
+	Playcount string   `json:"playcount,omitempty"`
+	Album     *Album   `json:"album,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Loved     string   `json:"loved,omitempty"`
+	Date      *Date    `json:"date,omitempty"`
+	Toptags   *Toptags `json:"toptags,omitempty"`
+	Wiki      *Wiki    `json:"wiki,omitempty"`
+	Duration  string   `json:"duration,omitempty"`
 }
 
 type Album struct {
