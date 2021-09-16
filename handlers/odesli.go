@@ -21,11 +21,19 @@ func msgLinkFilter(msg *gotgbot.Message) bool {
 
 func odesliMessageHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.Message
-	_, err := b.SendChatAction(msg.Chat.Id, "typing")
+	re, err := regexp.Compile("(?:(?:https?|ftp):\\/\\/)?[\\w/\\-?=%.]+\\.[\\w/\\-&?=%.]+")
 	if err != nil {
 		return err
 	}
-	d, err := odesli.GetLinks(msg.Text)
+	urls := re.FindAllString(msg.Text, -1)
+	if urls == nil {
+		return nil
+	}
+	_, err = b.SendChatAction(msg.Chat.Id, "typing")
+	if err != nil {
+		return err
+	}
+	d, err := odesli.GetLinks(urls[0])
 	if err != nil {
 		logging.SUGARED.Error(err.Error())
 		return err
