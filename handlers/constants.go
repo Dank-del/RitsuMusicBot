@@ -19,9 +19,8 @@ const (
 
 const (
 	albumPrefix = "st_"
-	albumText   = "Album"
-	hideText    = "Hide"
-	tdataPrefix = "tdata_"
+	albumText   = "Show album art"
+	hideText    = "Hide album art"
 )
 
 const (

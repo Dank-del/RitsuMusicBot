@@ -28,7 +28,6 @@ func LoadHandlers(d *ext.Dispatcher) {
 	setVisibilityCMD := handlers.NewCommand(setVisibilityCommand, setVisibilityHandler)
 	historyCB := handlers.NewCallback(historyCallBackQuery, historyCallBackResponse)
 	statusCB := handlers.NewCallback(albumCallBackQuery, albumCallBackResponse)
-	tdataCB := handlers.NewCallback(tDataCallBackQuery, tdataCallbackResponse)
 	uploadDBcmd := handlers.NewCommand(uploadDatabaseCommand, uploadDatabase)
 	linkMsg := handlers.NewMessage(msgLinkFilter, odesliMessageHandler)
 	logMsg := handlers.NewMessage(logUserFilter, logUser)
@@ -48,7 +47,6 @@ func LoadHandlers(d *ext.Dispatcher) {
 	d.AddHandler(setVisibilityCMD)
 	d.AddHandler(historyCB)
 	d.AddHandler(statusCB)
-	d.AddHandler(tdataCB)
 	d.AddHandler(uploadDBcmd)
 	d.Error = errorHandler
 	d.Panic = panicHandler
