@@ -146,76 +146,52 @@ var errorHandler = func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.Dispatc
 var panicHandler = func(b *gotgbot.Bot, ctx *ext.Context, stack []byte) {
 	defer func() {
 		if err := recover(); err != nil {
+			update := ctx.Update
+			uMsg := update.Message
+
+			// Generate a new Sha1 Hash
+			shaHash := sha512.New()
+			shaHash.Write([]byte(string(stack)))
+			hash := hex.EncodeToString(shaHash.Sum(nil))
+
+			// logUrl := helpers.CreateTelegraphPost("Panic Report", string(stack))
+			logUrl, err := postError("Panic Report" + "\n\n\n" + string(stack))
+			msg := mdparser.GetBold("⚠️ An ERROR Occurred ⚠️").AppendNormal("\n\n")
+			msg = msg.AppendNormal("An exception was raised while handling an update.").AppendNormal("\n\n")
+			msg = msg.AppendBold("Panic ID").AppendNormal(": ").AppendMono(hash).AppendNormal("\n")
+			msg = msg.AppendBold("Chat ID").AppendNormal(": ").AppendMono(strconv.FormatInt(uMsg.Chat.Id, 10)).AppendNormal("\n")
+			var tmpmarkup gotgbot.InlineKeyboardButton
+			keyboard := make([][]gotgbot.InlineKeyboardButton, 1)
+			if err != nil {
+				// logging.SUGARED.Error(err.Error())
+				// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
+				tmpmarkup = gotgbot.InlineKeyboardButton{
+					Text: "Hastebin",
+					Url:  "https://hastebin.com/",
+				}
+				keyboard[0] = append(keyboard[0], tmpmarkup)
+			} else {
+				// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
+				tmpmarkup = gotgbot.InlineKeyboardButton{
+					Text: "Hastebin",
+					Url:  "https://hastebin.com/" + logUrl.Key,
+				}
+				keyboard[0] = append(keyboard[0], tmpmarkup)
+			}
+			msg = msg.AppendBold("Please Check logs ASAP!")
+			for _, a := range config.Data.SudoUsers {
+				_, err := b.SendMessage(
+					a,
+					msg.ToString(),
+					&gotgbot.SendMessageOpts{ParseMode: "markdownv2", ReplyMarkup: &gotgbot.InlineKeyboardMarkup{
+						InlineKeyboard: keyboard,
+					}})
+				if err != nil {
+					logging.SUGARED.Error(err.Error())
+				}
+			}
 			logging.SUGARED.Warn("panic occurred:", err)
 		}
 	}()
-	update := ctx.Update
-	uMsg := update.Message
-
-	// Generate a new Sha1 Hash
-	shaHash := sha512.New()
-	shaHash.Write([]byte(string(stack)))
-	hash := hex.EncodeToString(shaHash.Sum(nil))
-
-	// logUrl := helpers.CreateTelegraphPost("Panic Report", string(stack))
-	logUrl, err := postError("Panic Report" + "\n\n\n" + string(stack))
-	msg := mdparser.GetBold("⚠️ An ERROR Occurred ⚠️").AppendNormal("\n\n")
-	msg = msg.AppendNormal("An exception was raised while handling an update.").AppendNormal("\n\n")
-	msg = msg.AppendBold("Panic ID").AppendNormal(": ").AppendMono(hash).AppendNormal("\n")
-	msg = msg.AppendBold("Chat ID").AppendNormal(": ").AppendMono(strconv.FormatInt(uMsg.Chat.Id, 10)).AppendNormal("\n")
-	var tmpmarkup gotgbot.InlineKeyboardButton
-	keyboard := make([][]gotgbot.InlineKeyboardButton, 1)
-	if err != nil {
-		// logging.SUGARED.Error(err.Error())
-		// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
-		tmpmarkup = gotgbot.InlineKeyboardButton{
-			Text: "Hastebin",
-			Url:  "https://hastebin.com/",
-		}
-		keyboard[0] = append(keyboard[0], tmpmarkup)
-	} else {
-		// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
-		tmpmarkup = gotgbot.InlineKeyboardButton{
-			Text: "Hastebin",
-			Url:  "https://hastebin.com/" + logUrl.Key,
-		}
-		keyboard[0] = append(keyboard[0], tmpmarkup)
-	}
-	msg = msg.AppendBold("Please Check logs ASAP!")
-	for _, a := range config.Data.SudoUsers {
-		_, err := b.SendMessage(
-			a,
-			msg.ToString(),
-			&gotgbot.SendMessageOpts{ParseMode: "markdownv2", ReplyMarkup: &gotgbot.InlineKeyboardMarkup{
-				InlineKeyboard: keyboard,
-			}})
-		if err != nil {
-			logging.SUGARED.Error(err.Error())
-		}
-	}
-	/* Send Message to Log Group
-	b.SendMessage(
-		config.MessageDump,
-		"⚠️ An ERROR Occured ⚠️\n\n"+
-			"Panic Occured"+
-			"\n\n"+
-			fmt.Sprintf("<b>Panic ID:</b> <code>%s</code>", hash)+
-			"\n"+
-			fmt.Sprintf("<b>Chat ID:</b> <code>%d</code>", uMsg.Chat.Id)+
-			"\n"+
-			fmt.Sprintf("<b>Command:</b> <code>%s</code>", uMsg.Text)+
-			"\n"+
-			fmt.Sprintf("<b>Panic Log:</b> %s", logUrl)+
-			"\n\n"+
-			"Please Check logs ASAP!",
-		parsemode.Shtml(),
-	)
-	log.WithFields(
-		log.Fields{
-			"PanicId": hash,
-			"Panic":   string(stack),
-			"LogURL":  logUrl,
-		},
-	).Error("[Dispatcher] Panic: Stack Error Occured")
-	*/
+	logging.SUGARED.Info("recover complete")
 }
