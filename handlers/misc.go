@@ -2,16 +2,17 @@ package handlers
 
 import (
 	"fmt"
+	"os"
+	"runtime"
+	"strconv"
+	"strings"
+
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
-	"os"
-	"runtime"
-	"strconv"
-	"strings"
 )
 
 func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -106,22 +107,71 @@ func uploadDatabase(b *gotgbot.Bot, ctx *ext.Context) error {
 	if config.Data.IsSudo(user.Id) {
 		txt := mdparser.GetBold("Database backup for ").AppendMention(b.FirstName, b.Id).AppendNormal("\n")
 		// txt = txt.AppendItalic("Exported on: ").AppendItalic(time.Now().Local().String())
-		_, err := b.SendDocument(msg.Chat.Id, fmt.Sprintf("%d.db", b.Id), &gotgbot.SendDocumentOpts{Caption: txt.ToString(), ParseMode: "markdownv2"})
+		fileName := fmt.Sprintf("%d.db", b.Id)
+		f, err := os.Open(fileName)
 		if err != nil {
-			// logging.SUGARED.Error(err.Error())
-			_, err := msg.Reply(b, mdparser.GetItalic(err.Error()).ToString(), config.GetDefaultMdOpt())
+			logging.SUGARED.Error(err.Error())
+			return ext.EndGroups
+		}
+		namedFile := gotgbot.NamedFile{
+			File:     f,
+			FileName: fileName,
+		}
+
+		private := msg.Chat.Type != "private" && shouldSendPrivate(strings.ToLower(msg.Text))
+		if private {
+			_, err = b.SendDocument(msg.From.Id, namedFile,
+				&gotgbot.SendDocumentOpts{
+					Caption:   txt.ToString(),
+					ParseMode: "markdownv2",
+				})
+			if err != nil {
+				warnError(msg, b, err)
+				return ext.EndGroups
+			}
+
+			_, err = msg.Reply(b, mdparser.GetItalic("db backup has been sent to you.").ToString(),
+				config.GetDefaultMdOpt())
 			if err != nil {
 				logging.SUGARED.Errorf(err.Error())
-				return err
+				return ext.EndGroups
 			}
-			return err
+
+		} else {
+			_, err = b.SendDocument(msg.Chat.Id, namedFile,
+				&gotgbot.SendDocumentOpts{
+					Caption:                  txt.ToString(),
+					ParseMode:                "markdownv2",
+					ReplyToMessageId:         msg.MessageId,
+					AllowSendingWithoutReply: false,
+				})
+
+			if err != nil {
+				warnError(msg, b, err)
+				return ext.EndGroups
+			}
 		}
 	} else {
-		_, err := b.SendMessage(msg.Chat.Id, mdparser.GetItalic("Get the fuck away from me..").ToString(), config.GetDefaultMdOpt())
+		_, err := msg.Reply(b, mdparser.GetItalic("Get the fuck away from me..").ToString(),
+			config.GetDefaultMdOpt())
+
 		if err != nil {
 			logging.SUGARED.Error(err.Error())
 			return err
 		}
 	}
 	return nil
+}
+
+func shouldSendPrivate(text string) bool {
+	return strings.Contains(text, "pv") || strings.Contains(text, "pm") ||
+		strings.Contains(text, "private")
+}
+
+func warnError(msg *gotgbot.Message, b *gotgbot.Bot, err error) {
+	_, err = msg.Reply(b, mdparser.GetItalic(err.Error()).ToString(),
+		config.GetDefaultMdOpt())
+	if err != nil {
+		logging.SUGARED.Errorf(err.Error())
+	}
 }

@@ -10,13 +10,7 @@ import (
 )
 
 func LoadHandlers(d *ext.Dispatcher) {
-	config.Limiter = ratelimiter.NewLimiter(d, false, false)
-	config.Limiter.ConsiderUser = true
-	config.Limiter.IgnoreMediaGroup = true
-	config.Limiter.SetFloodWaitTime(6 * time.Second) // 6 messages per 15 seconds
-	config.Limiter.SetMaxMessageCount(15)            // 6 messages per 15 seconds
-	config.Limiter.AddExceptionID(config.Data.SudoUsers...)
-	config.Limiter.Start()
+	loadLimiter(d)
 
 	startCMD := handlers.NewCommand(startCommand, startHandler)
 	helpCMD := handlers.NewCommand(helpCommand, helpHandler)
@@ -60,4 +54,21 @@ func LoadHandlers(d *ext.Dispatcher) {
 	d.Panic = panicHandler
 	d.AddHandler(linkMsg)
 	d.AddHandler(logMsg)
+}
+
+func loadLimiter(d *ext.Dispatcher) {
+	config.Limiter = ratelimiter.NewLimiter(d, false, false)
+	config.Limiter.ConsiderUser = true
+	config.Limiter.IgnoreMediaGroup = true
+
+	// 14 messages per 6 seconds
+	config.Limiter.SetFloodWaitTime(6 * time.Second)
+	config.Limiter.SetMaxMessageCount(14)
+
+	if len(config.Data.SudoUsers) != 0 {
+		config.Limiter.AddExceptionID(config.Data.SudoUsers...)
+	}
+
+	config.Limiter.Start()
+
 }
