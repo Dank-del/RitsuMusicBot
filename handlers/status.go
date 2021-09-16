@@ -138,7 +138,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if track.Loved == "1" {
 		md = md.AppendItalic("Loved ♥").AppendNormal("\n")
 	}
-	md = md.AppendItalic(fmt.Sprintf("%s has scrobbled %s tracks on ", msg.From.FirstName, lfmUser.User.Playcount)).AppendMono("Last.FM")
+	md = md.AppendItalic(fmt.Sprintf("%s scrobbles so far", lfmUser.User.Playcount))
 	topTracks = nil
 
 	_, err = msg.Reply(b, md.ToString(),
