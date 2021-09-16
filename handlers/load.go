@@ -50,6 +50,8 @@ func LoadHandlers(d *ext.Dispatcher) {
 	d.AddHandler(statusCB)
 	d.AddHandler(tdataCB)
 	d.AddHandler(uploadDBcmd)
+	d.Error = errorHandler
+	d.Panic = panicHandler
 	d.AddHandler(linkMsg)
 	d.AddHandler(logMsg)
 }
@@ -59,9 +61,9 @@ func loadLimiter(d *ext.Dispatcher) {
 	config.Limiter.ConsiderUser = true
 	config.Limiter.IgnoreMediaGroup = true
 
-	// 8 messages per 12 seconds
-	config.Limiter.SetFloodWaitTime(8 * time.Second)
-	config.Limiter.SetMaxMessageCount(12)
+	// 14 messages per 6 seconds
+	config.Limiter.SetFloodWaitTime(6 * time.Second)
+	config.Limiter.SetMaxMessageCount(14)
 
 	if len(config.Data.SudoUsers) != 0 {
 		config.Limiter.AddExceptionID(config.Data.SudoUsers...)

@@ -55,12 +55,42 @@ func GetRecentTracksByUsername(username string, limit int) (res *GetRecentTracks
 
 }
 
+func GetTopTracks(username string) (res *TopTrackResponse, err error) {
+	reqUrl := getTopTracksForUserBaseUrl + username + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey)
+	// print(reqUrl)
+	resp, err := http.Get(reqUrl)
+	if err != nil {
+		logging.SUGARED.Error(err.Error())
+		return nil, err
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			// why can't i return anything from here ??
+			logging.SUGARED.Warn(err.Error())
+		}
+	}(resp.Body)
+	d, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	data := new(TopTrackResponse)
+	err = json.Unmarshal(d, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
 func GetLastfmTrack(artist string, track string) (res *GetLastFmTrackResponse, err error) {
 	reqUrl := getTrackInfoBaseUrl + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) +
 		fmt.Sprintf("&artist=%s&track=%s", url.QueryEscape(artist), url.QueryEscape(track)) + "&format=json"
 	resp, err := http.Get(reqUrl)
 	if err != nil {
-		log.Println(err.Error())
+		logging.SUGARED.Error(err.Error())
 		return nil, err
 	}
 

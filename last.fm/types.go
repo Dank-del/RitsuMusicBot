@@ -6,6 +6,25 @@ type GetRecentTracks struct {
 	Message      string        `json:"message,omitempty"`
 }
 
+type TopTrackResponse struct {
+	Toptracks *Toptracks `json:"toptracks,omitempty"`
+	Error     int        `json:"error,omitempty"`
+	Message   string     `json:"message,omitempty"`
+}
+
+type Toptracks struct {
+	Attr  *ToptracksAttr `json:"@attr,omitempty"`
+	Track []Track        `json:"track,omitempty"`
+}
+
+type ToptracksAttr struct {
+	Page       string `json:"page,omitempty"`
+	PerPage    string `json:"perPage,omitempty"`
+	User       string `json:"user,omitempty"`
+	Total      string `json:"total,omitempty"`
+	TotalPages string `json:"totalPages,omitempty"`
+}
+
 type GetLastFmTrackResponse struct {
 	Track   TrackInfo `json:"track"`
 	Error   int       `json:"error,omitempty"`
@@ -87,6 +106,7 @@ type Track struct {
 	Date      *Date    `json:"date,omitempty"`
 	Toptags   *Toptags `json:"toptags,omitempty"`
 	Wiki      *Wiki    `json:"wiki,omitempty"`
+	Duration  string   `json:"duration,omitempty"`
 }
 
 type Album struct {
