@@ -119,10 +119,29 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	md = md.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
-	md = md.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
-	if track.Loved == "1" {
-		md = md.AppendNormal(", ").AppendItalic("Loved ♥")
+	topTracks, err := lastfm.GetTopTracks(uname.LastFmUsername)
+	if err != nil {
+		md.AppendItalic(err.Error()).AppendNormal("\n")
 	}
+	if topTracks.Error != 0 {
+		md.AppendItalic("Error fetching recent tracks: " + topTracks.Message)
+	} else {
+		var scb string
+		for _, e := range topTracks.Toptracks.Track {
+			if strings.Compare(track.Name, e.Name) == 0 && strings.Compare(track.Artist.Name, e.Artist.Name) == 0 {
+				scb = e.Playcount
+				break
+			}
+		}
+		if scb != "" {
+			md.AppendItalic("Scrobbled " + scb + " times by " + msg.From.FirstName).AppendNormal("\n")
+		}
+	}
+	if track.Loved == "1" {
+		md = md.AppendItalic("Loved ♥").AppendNormal("\n")
+	}
+	md = md.AppendItalic(fmt.Sprintf("%s has scrobbled %s tracks on ", msg.From.FirstName, lfmUser.User.Playcount)).AppendMono("Last.FM")
+	topTracks = nil
 
 	_, err = msg.Reply(b, md.ToString(),
 		&gotgbot.SendMessageOpts{
