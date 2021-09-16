@@ -92,11 +92,23 @@ var errorHandler = func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.Dispatc
 	msg = msg.AppendNormal("An exception was raised while handling an update.").AppendNormal("\n\n")
 	msg = msg.AppendBold("Error ID").AppendNormal(": ").AppendMono(hash).AppendNormal("\n")
 	msg = msg.AppendBold("Chat ID").AppendNormal(": ").AppendMono(strconv.FormatInt(uMsg.Chat.Id, 10)).AppendNormal("\n")
+	var tmpmarkup gotgbot.InlineKeyboardButton
+	keyboard := make([][]gotgbot.InlineKeyboardButton, 1)
 	if err != nil {
 		// logging.SUGARED.Error(err.Error())
-		msg = msg.AppendBold("Error Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
+		// msg = msg.AppendBold("Error Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
+		tmpmarkup = gotgbot.InlineKeyboardButton{
+			Text: "Hastebin",
+			Url:  "https://hastebin.com/",
+		}
+		keyboard[0] = append(keyboard[0], tmpmarkup)
 	} else {
-		msg = msg.AppendBold("Error Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
+		// msg = msg.AppendBold("Error Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
+		tmpmarkup = gotgbot.InlineKeyboardButton{
+			Text: "Hastebin",
+			Url:  "https://hastebin.com/" + logUrl.Key,
+		}
+		keyboard[0] = append(keyboard[0], tmpmarkup)
 	}
 
 	msg = msg.AppendBold("Please Check logs ASAP!")
@@ -104,7 +116,9 @@ var errorHandler = func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.Dispatc
 		_, err := b.SendMessage(
 			a,
 			msg.ToString(),
-			config.GetDefaultMdOpt(),
+			&gotgbot.SendMessageOpts{ParseMode: "markdownv2", ReplyMarkup: &gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			}},
 		)
 		if err != nil {
 			logging.SUGARED.Error(err.Error())
@@ -144,19 +158,32 @@ var panicHandler = func(b *gotgbot.Bot, ctx *ext.Context, stack []byte) {
 	msg = msg.AppendNormal("An exception was raised while handling an update.").AppendNormal("\n\n")
 	msg = msg.AppendBold("Panic ID").AppendNormal(": ").AppendMono(hash).AppendNormal("\n")
 	msg = msg.AppendBold("Chat ID").AppendNormal(": ").AppendMono(strconv.FormatInt(uMsg.Chat.Id, 10)).AppendNormal("\n")
+	var tmpmarkup gotgbot.InlineKeyboardButton
+	keyboard := make([][]gotgbot.InlineKeyboardButton, 1)
 	if err != nil {
 		// logging.SUGARED.Error(err.Error())
-		msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
+		// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
+		tmpmarkup = gotgbot.InlineKeyboardButton{
+			Text: "Hastebin",
+			Url:  "https://hastebin.com/",
+		}
+		keyboard[0] = append(keyboard[0], tmpmarkup)
 	} else {
-		msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
+		// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
+		tmpmarkup = gotgbot.InlineKeyboardButton{
+			Text: "Hastebin",
+			Url:  "https://hastebin.com/" + logUrl.Key,
+		}
+		keyboard[0] = append(keyboard[0], tmpmarkup)
 	}
 	msg = msg.AppendBold("Please Check logs ASAP!")
 	for _, a := range config.Data.SudoUsers {
 		_, err := b.SendMessage(
 			a,
 			msg.ToString(),
-			config.GetDefaultMdOpt(),
-		)
+			&gotgbot.SendMessageOpts{ParseMode: "markdownv2", ReplyMarkup: &gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			}})
 		if err != nil {
 			logging.SUGARED.Error(err.Error())
 		}
