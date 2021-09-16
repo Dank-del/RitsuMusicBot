@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"errors"
+	"regexp"
+
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 	"gitlab.com/Dank-del/lastfm-tgbot/odesli"
-	"regexp"
 )
 
 func msgLinkFilter(msg *gotgbot.Message) bool {
@@ -30,9 +30,17 @@ func odesliMessageHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		logging.SUGARED.Error(err.Error())
 		return err
 	}
+
 	if d.Code != "" {
+		// check if the link is valid or not. if the server returns
+		// this error code, it means that the link is not a valid
+		// link at all, so don't panic.
+		if d.Code == "could_not_resolve_entity" {
+			return ext.EndGroups
+		}
+
 		logging.SUGARED.Error(d.Code)
-		return errors.New(d.Code)
+		return nil
 	}
 	txt := mdparser.GetUserMention(msg.From.FirstName, msg.From.Id).AppendBold(" sent").AppendNormal("\n\n")
 	t := d.EntitiesByUniqueID[d.EntityUniqueID]
