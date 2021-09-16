@@ -268,6 +268,13 @@ func historyCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil {
 		return err
 	}
+	_, err = ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      "Changed page",
+		ShowAlert: false,
+	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
