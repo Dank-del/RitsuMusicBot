@@ -144,6 +144,11 @@ var errorHandler = func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.Dispatc
 }
 
 var panicHandler = func(b *gotgbot.Bot, ctx *ext.Context, stack []byte) {
+	defer func() {
+		if err := recover(); err != nil {
+			logging.SUGARED.Warn("panic occurred:", err)
+		}
+	}()
 	update := ctx.Update
 	uMsg := update.Message
 
