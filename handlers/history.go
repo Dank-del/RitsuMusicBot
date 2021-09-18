@@ -149,9 +149,7 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	thevalue.GenerateWholeList(tracks)
 
-	m := strings.Replace(thevalue.GetParsedText().ToString(), "|", `\|`, -1)
-	// fmt.Println(m)
-	_, err = msg.Reply(b, m,
+	_, err = msg.Reply(b, thevalue.GetParsedText().ToString(),
 		&gotgbot.SendMessageOpts{
 			ParseMode:             "markdownv2",
 			DisableWebPagePreview: true,
@@ -258,8 +256,7 @@ func historyCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 
-	msg := strings.Replace(thevalue.GetParsedText().ToString(), "|", `\|`, -1)
-	_, err := ctx.EffectiveMessage.EditText(b, msg,
+	_, err := ctx.EffectiveMessage.EditText(b, thevalue.GetParsedText().ToString(),
 		&gotgbot.EditMessageTextOpts{
 			ParseMode:             "markdownv2",
 			ReplyMarkup:           *ctx.EffectiveMessage.ReplyMarkup,
