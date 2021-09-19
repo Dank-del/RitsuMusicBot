@@ -24,7 +24,7 @@ const (
 	backSuffix    = "_" + backValue
 	backValue     = "b"
 
-	limitTracks  float64 = 20
+	limitTracks  float64 = 5
 	sleepTimeout         = 30 * time.Minute
 )
 
