@@ -19,7 +19,14 @@ import (
 )
 
 func statusFilter(msg *gotgbot.Message) bool {
-	return strings.HasPrefix(strings.ToLower(msg.Text), statusMessage)
+	chatID := msg.Chat.Id
+	d, err := database.GetChat(chatID)
+	if err != nil {
+		logging.SUGARED.Error(err.Error())
+		return false
+	}
+	// print(d.GetStatusMessage())
+	return strings.HasPrefix(strings.ToLower(msg.Text), d.GetStatusMessage())
 }
 
 func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {

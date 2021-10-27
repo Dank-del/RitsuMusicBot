@@ -15,6 +15,7 @@ const (
 	aboutCommand          = "about"
 	setVisibilityCommand  = "visible"
 	uploadDatabaseCommand = "uploaddb"
+	changeStatusCommand   = "changestatus"
 )
 
 const (

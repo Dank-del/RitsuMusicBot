@@ -16,6 +16,36 @@ type BotUser struct {
 	ShowProfile bool   `json:"show_profile"`
 }
 
+type Chat struct {
+	ChatID        int64  `gorm:"primaryKey"`
+	StatusMessage string `gorm:"default:status"`
+}
+
+func UpdateChat(ChatId int64, statusMessage string) {
+	tx := SESSION.Begin()
+	chat := &Chat{ChatID: ChatId, StatusMessage: statusMessage}
+	tx.Save(chat)
+	tx.Commit()
+}
+
+func GetChat(chatID int64) (c *Chat, err error) {
+	if SESSION == nil {
+		return nil, errors.New("cannot access to SESSION " +
+			"of db, because it's nil")
+	}
+
+	p := Chat{}
+	SESSION.Where("chat_id = ?", chatID).Take(&p)
+	return &p, nil
+}
+
+func (c *Chat) GetStatusMessage() string {
+	if c == nil || c.StatusMessage == "" {
+		return "status"
+	}
+	return c.StatusMessage
+}
+
 func UpdateLastFMUserInDB(UserID int64, LastFmUsername string) {
 	tx := SESSION.Begin()
 	user := &User{UserID: UserID, LastFmUsername: strings.ToLower(LastFmUsername)}
@@ -66,7 +96,6 @@ func GetBotUserByUsername(UserName string) (u *BotUser, err error) {
 }
 
 func GetBotUserCount() (c int64) {
-	SESSION.Model(&BotUser{}).Count(&c)
 	SESSION.Model(&BotUser{}).Count(&c)
 	return c
 }

@@ -13,6 +13,7 @@ import (
 	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
+	"gitlab.com/Dank-del/lastfm-tgbot/utilities"
 )
 
 func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -101,6 +102,10 @@ func setVisibilityHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
+func setStatusCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	return nil
+}
+
 func uploadDatabase(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.Message
 	user := msg.From
@@ -174,4 +179,41 @@ func warnError(msg *gotgbot.Message, b *gotgbot.Bot, err error) {
 	if err != nil {
 		logging.SUGARED.Errorf(err.Error())
 	}
+}
+
+func changeStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	msg := ctx.Message
+	user := msg.From
+	chat := msg.Chat
+	args := ctx.Args()
+
+	if !utilities.IsUserAdmin(b, &chat, user.Id) {
+		_, err := msg.Reply(b, mdparser.GetItalic("You are not authorized to do that!").ToString(),
+			config.GetDefaultMdOpt())
+		if err != nil {
+			logging.SUGARED.Error(err.Error())
+			return err
+		}
+		return nil
+	}
+
+	if len(args) == 1 {
+		_, err := msg.Reply(b, mdparser.GetItalic(fmt.Sprintf("Usage: %s <status>", args[0])).ToString(),
+			&gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if len(args) > 1 {
+		status := strings.Join(args[1:], " ")
+		database.UpdateChat(chat.Id, status)
+		_, err := msg.Reply(b, mdparser.GetBold(`Success, `).AppendNormal("status message was updated").ToString(),
+			config.GetDefaultMdOpt())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

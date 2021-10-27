@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -19,7 +20,7 @@ func StartDatabase(botId int64) {
 	logging.SUGARED.Info("Database connected")
 
 	// Create tables if they don't exist
-	err = SESSION.AutoMigrate(&User{}, &BotUser{})
+	err = SESSION.AutoMigrate(&User{}, &BotUser{}, &Chat{})
 	if err != nil {
 		logging.SUGARED.Error(err)
 	}
