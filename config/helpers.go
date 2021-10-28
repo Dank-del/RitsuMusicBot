@@ -3,7 +3,8 @@ package config
 import (
 	"encoding/json"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
-	"os"
+	"io/ioutil"
+	"log"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 )
@@ -29,25 +30,16 @@ func GetDefaultMdOpt() *gotgbot.SendMessageOpts {
 }
 
 func GetConfig() error {
-	var file *os.File
-	var err error
-	if os.PathSeparator == '/' {
-		// linux config
-		file, err = os.Open("config.json")
-	} else {
-		// winhoes (I mean windows) config
-		file, err = os.Open("E:\\gits\\LastFM-TG\\config.json")
-	}
+	file, err := ioutil.ReadFile("config.json")
 
 	if err != nil {
 		return err
 	}
-	defer func(file *os.File) {
-		_ = file.Close()
-	}(file)
 
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&Data)
+	err = json.Unmarshal(file, &Data)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	if err != nil {
 		logging.SUGARED.Errorf("Error in parsing config: %s", err)
 	}
