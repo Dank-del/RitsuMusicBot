@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
@@ -99,10 +100,6 @@ func setVisibilityHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 	}
-	return nil
-}
-
-func setStatusCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
@@ -215,5 +212,35 @@ func changeStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func gitPull(b *gotgbot.Bot, ctx *ext.Context) error {
+	msg := ctx.EffectiveMessage
+	usr := ctx.EffectiveUser
+	if !config.Data.IsSudo(usr.Id) {
+		_, err := msg.Reply(b, mdparser.GetItalic("You are not a sudo user.").ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	a := exec.Command("git", "reset", "--hard")
+	_, err := a.Output()
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command("git", "pull")
+	m, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+	_, err = msg.Reply(b, mdparser.GetMono(string(m)).ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+	if err != nil {
+		return err
+	}
+
+	exec.Command("cmd.exe", "run.bat")
+	os.Exit(1)
 	return nil
 }
