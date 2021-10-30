@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"gorm.io/gorm/logger"
 
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 	"gorm.io/driver/sqlite"
@@ -11,7 +12,9 @@ import (
 var SESSION *gorm.DB
 
 func StartDatabase(botId int64) {
-	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("%d.db", botId)), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("%d.db", botId)), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
+	})
 	if err != nil {
 		logging.SUGARED.Error("failed to connect database")
 	}
