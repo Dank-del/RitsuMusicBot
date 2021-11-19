@@ -8,3 +8,4 @@ lastfm-tgbot
 
 # ignore shared library files (just in-case)
 *.dll
+tmp/

@@ -6,15 +6,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 type HasteBin struct {
@@ -22,7 +23,7 @@ type HasteBin struct {
 }
 
 func postError(error string) (res *HasteBin, err error) {
-	url := "https://hastebin.com/documents"
+	url := "https://www.toptal.com/developers/hastebin"
 	resp, err := http.Post(url, "text/plain", strings.NewReader(error))
 	if err != nil {
 		logging.SUGARED.Error(err.Error())
@@ -99,14 +100,14 @@ var errorHandler = func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.Dispatc
 		// msg = msg.AppendBold("Error Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
 		tmpmarkup = gotgbot.InlineKeyboardButton{
 			Text: "Hastebin",
-			Url:  "https://hastebin.com/",
+			Url:  "https://www.toptal.com/developers/hastebin/",
 		}
 		keyboard[0] = append(keyboard[0], tmpmarkup)
 	} else {
 		// msg = msg.AppendBold("Error Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
 		tmpmarkup = gotgbot.InlineKeyboardButton{
 			Text: "Hastebin",
-			Url:  "https://hastebin.com/" + logUrl.Key,
+			Url:  "https://www.toptal.com/developers/hastebin/" + logUrl.Key,
 		}
 		keyboard[0] = append(keyboard[0], tmpmarkup)
 	}
@@ -167,14 +168,14 @@ var panicHandler = func(b *gotgbot.Bot, ctx *ext.Context, stack []byte) {
 				// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
 				tmpmarkup = gotgbot.InlineKeyboardButton{
 					Text: "Hastebin",
-					Url:  "https://hastebin.com/",
+					Url:  "https://www.toptal.com/developers/hastebin/",
 				}
 				keyboard[0] = append(keyboard[0], tmpmarkup)
 			} else {
 				// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
 				tmpmarkup = gotgbot.InlineKeyboardButton{
 					Text: "Hastebin",
-					Url:  "https://hastebin.com/" + logUrl.Key,
+					Url:  "https://www.toptal.com/developers/hastebin/" + logUrl.Key,
 				}
 				keyboard[0] = append(keyboard[0], tmpmarkup)
 			}
