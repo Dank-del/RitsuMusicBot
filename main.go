@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Dank-del/MusixScrape/musixScrape"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/config"
@@ -28,6 +29,10 @@ func main() {
 	if err != nil {
 		Logger.Error(err.Error())
 	}
+	//undo := zap.RedirectStdLog(loggerMgr)
+	//defer undo()
+	config.Local.Config = config.Data
+	config.Local.MusixMatchSession = musixScrape.New(nil)
 	logging.SUGARED.Info("Starting daemon..")
 	b, err := gotgbot.NewBot(config.Data.BotToken, &gotgbot.BotOpts{
 		Client:      http.Client{},

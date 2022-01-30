@@ -12,3 +12,4 @@ var mdMessageOpt = &gotgbot.SendMessageOpts{
 }
 
 var Limiter *ratelimiter.Limiter
+var Local = &DaemonLocal{}

@@ -15,7 +15,6 @@ import (
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 	"gitlab.com/Dank-del/lastfm-tgbot/logging"
-	genius "gitlab.com/Dank-del/lastfm-tgbot/lyrics"
 )
 
 func statusFilter(msg *gotgbot.Message) bool {
@@ -157,24 +156,21 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	if strings.Contains(msg.Text, lyricsCommand) {
 		m := mdparser.GetBold(fmt.Sprintf("Lyrics: %s - %s", track.Artist.Name, track.Name)).AppendNormal("\n\n")
-		var l []string
-		e := 0
-		for len(l) < 5 {
-			l, err = genius.GetLyrics(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name))
-			e++
-			if e > 10 {
-				_, err := b.SendMessage(msg.Chat.Id, mdparser.GetItalic(err.Error()).ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
-				return err
-			}
-		}
+		// var l []musixScrape.LyricResult
+		l, err := config.Local.MusixMatchSession.Search(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name))
 		if err != nil {
-			m = m.AppendItalic(fmt.Sprintf("Error: %s", err.Error()))
-		} else {
-			for i := range l {
-				m = m.AppendItalic(l[i]).AppendNormal("\n")
-			}
+			errm := mdparser.GetBold("Failed due to: ").AppendItalic(err.Error())
+			_, err := msg.Reply(b, errm.ToString(), config.GetDefaultMdOpt())
+			return err
+		} else if len(l) == 0 {
+			errm := mdparser.GetItalic("No results found")
+			_, err := msg.Reply(b, errm.ToString(), config.GetDefaultMdOpt())
+			return err
 		}
+		m.AppendItalicThis(l[0].Artist).AppendNormalThis(" - ").AppendBoldThis(l[0].Song).AppendNormalThis("\n")
+		m.AppendNormalThis(l[0].Lyrics)
 		_, err = msg.Reply(b, m.ToString(), config.GetDefaultMdOpt())
+		return err
 	}
 	return err
 }
