@@ -15,7 +15,7 @@ func msgLinkFilter(msg *gotgbot.Message) bool {
 	txt := msg.Text
 	m, err := regexp.MatchString(urlRegEx, txt)
 
-	return err != nil && m
+	return err == nil && m
 }
 
 func odesliMessageHandler(b *gotgbot.Bot, ctx *ext.Context) error {
