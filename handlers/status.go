@@ -275,11 +275,13 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	uname, err := database.GetLastFMUserFromDB(user.Id)
 	// fmt.Println(uname)
-	if err != nil || uname.LastFmUsername == "" {
+	if err != nil || !uname.IsValid() {
 		m = mdparser.GetBold(user.FirstName).AppendNormal(" ").AppendItalic("haven't registered themselves on this bot yet.").AppendNormal("\n")
 		m = m.AppendBold("Please use ").AppendMono("/setusername")
 		results = append(results, gotgbot.InlineQueryResultArticle{Id: ctx.InlineQuery.Id, Title: fmt.Sprintf("%s's needs to register themselves", user.FirstName),
 			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
+		_, _ = query.Answer(b, results, nil)
+		return ext.EndGroups
 	}
 
 	d, err := last_fm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
@@ -351,12 +353,8 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	if err != nil {
-		_, err := query.Answer(b,
-			results,
-			&gotgbot.AnswerInlineQueryOpts{})
-		if err != nil {
-			return err
-		}
+		_, _ = query.Answer(b, results, nil)
+		return ext.EndGroups
 	}
 	_, err = query.Answer(b, results, &gotgbot.AnswerInlineQueryOpts{IsPersonal: true})
 	if err != nil {
