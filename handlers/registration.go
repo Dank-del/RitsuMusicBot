@@ -1,17 +1,26 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
-	last_fm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
+	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
+	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 )
 
 func setUsername(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.Message
 	args := ctx.Args()
+	chatID := msg.Chat.Id
+	d, err := database.GetChat(chatID)
+	if err != nil {
+		logging.SUGARED.Error(err.Error())
+		return ext.EndGroups
+	}
+	// print(d.GetStatusMessage())
 	var m mdparser.WMarkDown
 	if len(args) == 1 {
 		m = mdparser.GetItalic("Usage: ").AppendItalic(args[0])
@@ -22,7 +31,7 @@ func setUsername(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	} else {
 		username := args[1]
-		user, err := last_fm.GetLastFMUser(username)
+		user, err := lastfm.GetLastFMUser(username)
 		if err != nil || user == nil || user.User == nil {
 			m = mdparser.GetItalic("\n> check the spelling and try again")
 			_, err := msg.Reply(b, m.ToString(), config.GetDefaultMdOpt())
@@ -32,7 +41,7 @@ func setUsername(b *gotgbot.Bot, ctx *ext.Context) error {
 			return nil
 		}
 		m = mdparser.GetItalic(`Username set as `).AppendMono(username)
-		m = m.AppendItalic(`, enjoy flexing "status"`)
+		m = m.AppendItalic(fmt.Sprintf(`, enjoy flexing "%s"`, d.GetStatusMessage()))
 		database.UpdateLastFMUserInDB(msg.From.Id, username)
 		database.UpdateBotUser(msg.From.Id, msg.From.Username, false)
 		_, err = msg.Reply(b, m.ToString(), config.GetDefaultMdOpt())

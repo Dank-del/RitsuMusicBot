@@ -9,7 +9,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
-	last_fm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
+	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 )
 
 func meHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -27,7 +27,7 @@ func meHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 	}
-	lastFMuser, _ := last_fm.GetLastFMUser(getusername.LastFmUsername)
+	lastFMuser, _ := lastfm.GetLastFMUser(getusername.LastFmUsername)
 	createdAt := time.Unix(int64(lastFMuser.User.Registered.Text), 0).Format(time.RFC850)
 
 	//m := fmt.Sprintf("<b>%s</b>\n\n", lastFMuser.User.Name)
@@ -74,9 +74,9 @@ func meHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	return err
 }
 
-func getPicUrl(images []last_fm.Image) *string {
+func getPicUrl(images []lastfm.Image) *string {
 	for _, image := range images {
-		if image.Size == last_fm.Extralarge {
+		if image.Size == lastfm.Extralarge {
 			if len(image.Text) < 2 {
 				return nil
 			}
