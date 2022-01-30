@@ -3,12 +3,12 @@ package handlers
 import (
 	"fmt"
 	"github.com/Dank-del/MusixScrape/musixScrape"
+	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"strings"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
 )
 
 func lyricsInlineFilter(q *gotgbot.InlineQuery) bool {
@@ -34,7 +34,7 @@ func lyricsInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	}
 	var l []musixScrape.LyricResult
 	for len(l) < 5 {
-		l, err = config.Local.MusixMatchSession.Search(q)
+		l, err = config2.Local.MusixMatchSession.Search(q)
 		if err != nil {
 			return err
 		}
@@ -75,18 +75,18 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	// var l []musixScrape.LyricResult
 	// e := 0
 	txt := mdparser.GetBold(fmt.Sprintf("Results for %s", q)).AppendNormal("\n")
-	l, err := config.Local.MusixMatchSession.Search(q)
+	l, err := config2.Local.MusixMatchSession.Search(q)
 	if err != nil {
 		errm := mdparser.GetBold("Failed due to: ").AppendItalic(err.Error())
-		_, err := msg.Reply(b, errm.ToString(), config.GetDefaultMdOpt())
+		_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
 		return err
 	} else if len(l) == 0 {
 		errm := mdparser.GetItalic("No results found")
-		_, err := msg.Reply(b, errm.ToString(), config.GetDefaultMdOpt())
+		_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
 		return err
 	}
 	txt.AppendItalicThis(l[0].Artist).AppendNormalThis(" - ").AppendBoldThis(l[0].Song).AppendNormalThis("\n")
 	txt.AppendNormalThis(l[0].Lyrics)
-	_, err = msg.Reply(b, txt.ToString(), config.GetDefaultMdOpt())
+	_, err = msg.Reply(b, txt.ToString(), config2.GetDefaultMdOpt())
 	return err
 }

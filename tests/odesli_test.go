@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"gitlab.com/Dank-del/lastfm-tgbot/odesli"
+	"gitlab.com/Dank-del/lastfm-tgbot/libs/odesli"
 	"testing"
 )
 

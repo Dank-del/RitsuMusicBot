@@ -3,15 +3,14 @@ package last_fm
 import (
 	"encoding/json"
 	"fmt"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
-
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 )
 
 const APILimit = 1000

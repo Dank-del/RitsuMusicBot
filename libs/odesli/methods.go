@@ -2,7 +2,7 @@ package odesli
 
 import (
 	"encoding/json"
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"io"
 	"io/ioutil"
 	"log"

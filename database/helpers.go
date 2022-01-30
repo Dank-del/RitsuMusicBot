@@ -2,7 +2,7 @@ package database
 
 import (
 	"errors"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"strings"
 )
 

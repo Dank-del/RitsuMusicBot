@@ -1,10 +1,9 @@
 package tests
 
 import (
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 	"testing"
-
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
-	last_fm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 )
 
 func TestGetRecents(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
+	lastfm "gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 	"strconv"
 )
 

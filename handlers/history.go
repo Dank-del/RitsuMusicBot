@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	last_fm2 "gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 	"math"
 	"strconv"
 	"strings"
@@ -11,9 +13,7 @@ import (
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
-	last_fm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
 )
 
 const (
@@ -29,7 +29,7 @@ const (
 )
 
 type historyData struct {
-	tracks      [][]last_fm.Track
+	tracks      [][]last_fm2.Track
 	currentPage int
 	totalPages  int
 	owner       *gotgbot.User
@@ -82,8 +82,8 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	var theuser *last_fm.LastFMUser
-	theuser, err = last_fm.GetLastFMUser(dbuser.LastFmUsername)
+	var theuser *last_fm2.LastFMUser
+	theuser, err = last_fm2.GetLastFMUser(dbuser.LastFmUsername)
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	grc, err := last_fm.GetRecentTracksByUsername(dbuser.LastFmUsername, limit)
+	grc, err := last_fm2.GetRecentTracksByUsername(dbuser.LastFmUsername, limit)
 	if err != nil {
 		_, err := msg.Reply(b, fmt.Sprintf("<i>Error: %s</i>", err.Error()),
 			&gotgbot.SendMessageOpts{ParseMode: "html"})
@@ -169,7 +169,7 @@ func historyCommandHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	return err
 }
 
-func getSimpleList(tracks []last_fm.Track,
+func getSimpleList(tracks []last_fm2.Track,
 	user *gotgbot.User, offset int) mdparser.WMarkDown {
 	m := mdparser.GetBold("Recently played tracks by ").AppendMention(user.FirstName, user.Id).AppendNormal("\n\n")
 	for a, e := range tracks {
@@ -276,21 +276,21 @@ func historyCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-func (h *historyData) GetCurrentTrackList() []last_fm.Track {
+func (h *historyData) GetCurrentTrackList() []last_fm2.Track {
 	return h.tracks[h.currentPage-1]
 }
 
-func (h *historyData) SetAsCurrentTrackList(tracks []last_fm.Track) {
+func (h *historyData) SetAsCurrentTrackList(tracks []last_fm2.Track) {
 	if len(h.tracks) < h.totalPages {
-		h.tracks = make([][]last_fm.Track, h.totalPages)
+		h.tracks = make([][]last_fm2.Track, h.totalPages)
 	}
 
 	h.tracks[h.currentPage-1] = tracks
 }
 
-func (h *historyData) GenerateWholeList(tracks []last_fm.Track) {
-	var currentList []last_fm.Track
-	h.tracks = make([][]last_fm.Track, h.totalPages)
+func (h *historyData) GenerateWholeList(tracks []last_fm2.Track) {
+	var currentList []last_fm2.Track
+	h.tracks = make([][]last_fm2.Track, h.totalPages)
 	num := 0
 	index := 0
 	//whole := 0

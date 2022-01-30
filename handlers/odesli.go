@@ -1,13 +1,13 @@
 package handlers
 
 import (
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
+	"gitlab.com/Dank-del/lastfm-tgbot/libs/odesli"
 	"regexp"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
-	"gitlab.com/Dank-del/lastfm-tgbot/odesli"
 )
 
 func msgLinkFilter(msg *gotgbot.Message) bool {

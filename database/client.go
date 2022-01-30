@@ -2,10 +2,10 @@ package database
 
 import (
 	"fmt"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gorm.io/gorm/logger"
 
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

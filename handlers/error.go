@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"io"
 	"net/http"
 	"runtime/debug"
@@ -14,8 +16,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/google/uuid"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 )
 
 type MemochoRequest struct {

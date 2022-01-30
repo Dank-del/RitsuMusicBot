@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"fmt"
+	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
+	"gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 	"html"
 	"net/url"
 	"strconv"
@@ -11,10 +14,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/google/uuid"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
-	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 )
 
 func statusFilter(msg *gotgbot.Message) bool {
@@ -54,7 +54,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 
-	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
+	d, err := last_fm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return err
@@ -85,7 +85,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	track := &d.Recenttracks.Track[0]
-	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
+	lfmUser, err := last_fm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return err
@@ -123,7 +123,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	md = md.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
-	topTracks, err := lastfm.GetTopTracks(uname.LastFmUsername)
+	topTracks, err := last_fm.GetTopTracks(uname.LastFmUsername)
 	if err != nil {
 		md.AppendItalic(err.Error()).AppendNormal("\n")
 	}
@@ -157,25 +157,25 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if strings.Contains(msg.Text, lyricsCommand) {
 		m := mdparser.GetBold(fmt.Sprintf("Lyrics: %s - %s", track.Artist.Name, track.Name)).AppendNormal("\n\n")
 		// var l []musixScrape.LyricResult
-		l, err := config.Local.MusixMatchSession.Search(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name))
+		l, err := config2.Local.MusixMatchSession.Search(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name))
 		if err != nil {
 			errm := mdparser.GetBold("Failed due to: ").AppendItalic(err.Error())
-			_, err := msg.Reply(b, errm.ToString(), config.GetDefaultMdOpt())
+			_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
 			return err
 		} else if len(l) == 0 {
 			errm := mdparser.GetItalic("No results found")
-			_, err := msg.Reply(b, errm.ToString(), config.GetDefaultMdOpt())
+			_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
 			return err
 		}
 		m.AppendItalicThis(l[0].Artist).AppendNormalThis(" - ").AppendBoldThis(l[0].Song).AppendNormalThis("\n")
 		m.AppendNormalThis(l[0].Lyrics)
-		_, err = msg.Reply(b, m.ToString(), config.GetDefaultMdOpt())
+		_, err = msg.Reply(b, m.ToString(), config2.GetDefaultMdOpt())
 		return err
 	}
 	return err
 }
 
-func generateButtons(track *lastfm.Track, album bool,
+func generateButtons(track *last_fm.Track, album bool,
 	id int64) *gotgbot.InlineKeyboardMarkup {
 	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
 		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
@@ -281,7 +281,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
 	}
 
-	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
+	d, err := last_fm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return err
@@ -299,7 +299,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
 	}
 
-	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
+	lfmUser, err := last_fm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return err
@@ -383,7 +383,7 @@ func getStatus(user *gotgbot.User) (mdparser.WMarkDown, error) {
 			return nil, err
 		}
 	}
-	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
+	d, err := last_fm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return nil, err
@@ -409,7 +409,7 @@ func getStatus(user *gotgbot.User) (mdparser.WMarkDown, error) {
 		s = "was"
 	}
 	track := d.Recenttracks.Track[0]
-	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
+	lfmUser, err := last_fm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return nil, err

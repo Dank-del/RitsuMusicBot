@@ -5,10 +5,10 @@ import (
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
-	lastfm "gitlab.com/Dank-del/lastfm-tgbot/last.fm"
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
+	lastfm "gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 )
 
 func setUsername(b *gotgbot.Bot, ctx *ext.Context) error {

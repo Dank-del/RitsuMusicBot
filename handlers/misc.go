@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"fmt"
+	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
 	"os"
 	"os/exec"
 	"runtime"
@@ -11,10 +14,7 @@ import (
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
-	"gitlab.com/Dank-del/lastfm-tgbot/utilities"
 )
 
 func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -51,7 +51,7 @@ func logUserFilter(msg *gotgbot.Message) bool {
 	return len(msg.Text) > 0
 }
 
-func logUser(b *gotgbot.Bot, ctx *ext.Context) error {
+func logUser(_ *gotgbot.Bot, ctx *ext.Context) error {
 	user := ctx.Message.From
 	dbuser, err := database.GetBotUserByID(user.Id)
 	if err != nil {
@@ -62,7 +62,7 @@ func logUser(b *gotgbot.Bot, ctx *ext.Context) error {
 	} else {
 		database.UpdateBotUser(user.Id, user.Username, dbuser.ShowProfile)
 	}
-	return nil
+	return ext.ContinueGroups
 }
 
 func setVisibilityHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -82,20 +82,20 @@ func setVisibilityHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	case "yes":
 		database.UpdateBotUser(user.Id, user.Username, true)
 		_, err := msg.Reply(b, mdparser.GetItalic(`Success, your profile will now be visible on "status".`).ToString(),
-			config.GetDefaultMdOpt())
+			config2.GetDefaultMdOpt())
 		if err != nil {
 			return err
 		}
 	case "no":
 		database.UpdateBotUser(user.Id, user.Username, false)
 		_, err := msg.Reply(b, mdparser.GetItalic(`Success, your profile won't be visible on "status" anymore.`).ToString(),
-			config.GetDefaultMdOpt())
+			config2.GetDefaultMdOpt())
 		if err != nil {
 			return err
 		}
 	default:
 		_, err := msg.Reply(b, mdparser.GetItalic(`Expected Yes/No, received `).AppendMono(args[1]).ToString(),
-			config.GetDefaultMdOpt())
+			config2.GetDefaultMdOpt())
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func setVisibilityHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 func uploadDatabase(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.Message
 	user := msg.From
-	if config.Data.IsSudo(user.Id) {
+	if config2.Data.IsSudo(user.Id) {
 		txt := mdparser.GetBold("Database backup for ").AppendMention(b.FirstName, b.Id).AppendNormal("\n")
 		// txt = txt.AppendItalic("Exported on: ").AppendItalic(time.Now().Local().String())
 		fileName := fmt.Sprintf("%d.db", b.Id)
@@ -133,7 +133,7 @@ func uploadDatabase(b *gotgbot.Bot, ctx *ext.Context) error {
 			}
 
 			_, err = msg.Reply(b, mdparser.GetItalic("db backup has been sent to you.").ToString(),
-				config.GetDefaultMdOpt())
+				config2.GetDefaultMdOpt())
 			if err != nil {
 				logging.SUGARED.Errorf(err.Error())
 				return ext.EndGroups
@@ -155,7 +155,7 @@ func uploadDatabase(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	} else {
 		_, err := msg.Reply(b, mdparser.GetItalic("Get the fuck away from me..").ToString(),
-			config.GetDefaultMdOpt())
+			config2.GetDefaultMdOpt())
 
 		if err != nil {
 			logging.SUGARED.Error(err.Error())
@@ -172,7 +172,7 @@ func shouldSendPrivate(text string) bool {
 
 func warnError(msg *gotgbot.Message, b *gotgbot.Bot, err error) {
 	_, err = msg.Reply(b, mdparser.GetItalic(err.Error()).ToString(),
-		config.GetDefaultMdOpt())
+		config2.GetDefaultMdOpt())
 	if err != nil {
 		logging.SUGARED.Errorf(err.Error())
 	}
@@ -186,7 +186,7 @@ func changeStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	if !utilities.IsUserAdmin(b, &chat, user.Id) {
 		_, err := msg.Reply(b, mdparser.GetItalic("You are not authorized to do that!").ToString(),
-			config.GetDefaultMdOpt())
+			config2.GetDefaultMdOpt())
 		if err != nil {
 			logging.SUGARED.Error(err.Error())
 			return err
@@ -207,7 +207,7 @@ func changeStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		status := strings.Join(args[1:], " ")
 		database.UpdateChat(chat.Id, status)
 		_, err := msg.Reply(b, mdparser.GetBold(`Success, `).AppendNormal("status message was updated").ToString(),
-			config.GetDefaultMdOpt())
+			config2.GetDefaultMdOpt())
 		if err != nil {
 			return err
 		}
@@ -218,7 +218,7 @@ func changeStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 func gitPull(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.EffectiveMessage
 	usr := ctx.EffectiveUser
-	if !config.Data.IsSudo(usr.Id) {
+	if !config2.Data.IsSudo(usr.Id) {
 		_, err := msg.Reply(b, mdparser.GetItalic("You are not a sudo user.").ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
 		if err != nil {
 			return err

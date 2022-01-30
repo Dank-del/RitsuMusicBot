@@ -1,12 +1,12 @@
 package handlers
 
 import (
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/gotgbot/ratelimiter/ratelimiter"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
 )
 
 func LoadHandlers(d *ext.Dispatcher) {

@@ -5,10 +5,10 @@ import (
 	"github.com/Dank-del/MusixScrape/musixScrape"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"gitlab.com/Dank-del/lastfm-tgbot/config"
+	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	"gitlab.com/Dank-del/lastfm-tgbot/handlers"
-	"gitlab.com/Dank-del/lastfm-tgbot/logging"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -25,16 +25,16 @@ func main() {
 	}(loggerMgr) // flushes buffer, if any
 	Logger := loggerMgr.Sugar()
 	logging.SUGARED = loggerMgr.Sugar()
-	err := config.GetConfig()
+	err := config2.GetConfig()
 	if err != nil {
 		Logger.Error(err.Error())
 	}
 	undo := zap.RedirectStdLog(loggerMgr)
 	defer undo()
-	config.Local.Config = config.Data
-	config.Local.MusixMatchSession = musixScrape.New(nil)
+	config2.Local.Config = config2.Data
+	config2.Local.MusixMatchSession = musixScrape.New(nil)
 	logging.SUGARED.Info("Starting daemon..")
-	b, err := gotgbot.NewBot(config.Data.BotToken, &gotgbot.BotOpts{
+	b, err := gotgbot.NewBot(config2.Data.BotToken, &gotgbot.BotOpts{
 		Client:      http.Client{},
 		GetTimeout:  gotgbot.DefaultGetTimeout,
 		PostTimeout: gotgbot.DefaultPostTimeout,
