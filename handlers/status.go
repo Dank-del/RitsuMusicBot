@@ -242,7 +242,7 @@ func albumCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 		msg.ReplyMarkup.InlineKeyboard[1][0].Text = albumText
 	}
 
-	_, err = msg.EditText(b, msg.Text, &gotgbot.EditMessageTextOpts{
+	_, _, err = msg.EditText(b, msg.Text, &gotgbot.EditMessageTextOpts{
 		Entities:              ctx.EffectiveMessage.Entities,
 		DisableWebPagePreview: !preview,
 		ReplyMarkup:           *msg.ReplyMarkup,

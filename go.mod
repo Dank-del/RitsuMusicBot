@@ -3,18 +3,18 @@ module gitlab.com/Dank-del/lastfm-tgbot
 go 1.17
 
 require (
-	github.com/ALiwoto/mdparser v1.0.5
+	github.com/ALiwoto/mdparser v1.0.10
 	github.com/Dank-del/MusixScrape v1.0.0
-	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.1
+	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.5
 	github.com/google/uuid v1.3.0
-	github.com/gotgbot/ratelimiter v1.0.1
-	go.uber.org/zap v1.19.1
-	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.21.13
+	github.com/gotgbot/ratelimiter v1.0.5
+	go.uber.org/zap v1.20.0
+	gorm.io/driver/sqlite v1.2.6
+	gorm.io/gorm v1.22.5
 )
 
 require (
-	github.com/ALiwoto/StrongStringGo v1.0.3 // indirect
+	github.com/ALiwoto/StrongStringGo v1.0.10 // indirect
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/antchfx/htmlquery v1.2.4 // indirect
@@ -25,9 +25,9 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.2 // indirect
+	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
-	github.com/mattn/go-sqlite3 v1.14.8 // indirect
+	github.com/mattn/go-sqlite3 v1.14.11 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	go.uber.org/atomic v1.9.0 // indirect

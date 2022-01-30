@@ -218,7 +218,7 @@ func historyCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 	// this will reduce the high memory usage and will prevent the memory
 	// from being fucked up.
 	if thevalue == nil {
-		_, err := ctx.EffectiveMessage.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{})
+		_, _, err := ctx.EffectiveMessage.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{})
 		if err != nil {
 			return err
 		}
@@ -256,7 +256,7 @@ func historyCallBackResponse(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 
-	_, err := ctx.EffectiveMessage.EditText(b, thevalue.GetParsedText().ToString(),
+	_, _, err := ctx.EffectiveMessage.EditText(b, thevalue.GetParsedText().ToString(),
 		&gotgbot.EditMessageTextOpts{
 			ParseMode:             "markdownv2",
 			ReplyMarkup:           *ctx.EffectiveMessage.ReplyMarkup,
