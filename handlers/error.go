@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
-	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"io"
 	"net/http"
 	"runtime/debug"
 	"strconv"
+
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -23,7 +24,6 @@ type MemochoRequest struct {
 }
 
 func postError(error string) (link string, err error) {
-	//url, err := kv.PasteBinSession.PasteAnonymous(error, title, "", "N", "1")
 	data, _ := json.Marshal(MemochoRequest{Snippet: error})
 	resp, err := http.Post("https://bin.kv2.dev/", "application/json", bytes.NewReader(data))
 	if err != nil {
@@ -54,6 +54,7 @@ var ErrorHandler = func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.Dispatc
 			logging.SUGARED.Error(err.Error())
 			return 0
 		}
+
 		return ext.DispatcherActionEndGroups
 	}
 
@@ -68,22 +69,19 @@ var ErrorHandler = func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.Dispatc
 	// )
 
 	logUrl, err := postError(string(errorJson) + "\n\n\n" + string(updateJson) + "\n\n\n" + err.Error()) // helpers.CreateTelegraphPost("Error Report", string(errorJson)+"<br><br>"+string(updateJson)+"<br><br>"+tgErr.Error())
-	msg := mdparser.GetBold("⚠️ An ERROR Occurred ⚠️").AppendNormal("\n\n")
-	msg = msg.AppendNormal("An exception was raised while handling an update.").AppendNormal("\n\n")
-	msg = msg.AppendBold("Error ID").AppendNormal(": ").AppendMono(uuid.New().String()).AppendNormal("\n")
-	msg = msg.AppendBold("Chat ID").AppendNormal(": ").AppendMono(strconv.FormatInt(uMsg.Chat.Id, 10)).AppendNormal("\n")
+	msg := mdparser.GetBold("⚠️ An ERROR Occurred ⚠️").Normal("\n\n")
+	msg.Normal("An exception was raised while handling an update.").Normal("\n\n")
+	msg.Bold("Error ID").Normal(": ").Mono(uuid.New().String()).Normal("\n")
+	msg.Bold("Chat ID").Normal(": ").Mono(strconv.FormatInt(uMsg.Chat.Id, 10)).Normal("\n")
 	var tmpmarkup gotgbot.InlineKeyboardButton
 	keyboard := make([][]gotgbot.InlineKeyboardButton, 1)
 	if err != nil {
-		// logging.SUGARED.Error(err.Error())
-		// msg = msg.AppendBold("Error Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
 		tmpmarkup = gotgbot.InlineKeyboardButton{
 			Text: "Memochō",
 			Url:  logUrl,
 		}
 		keyboard[0] = append(keyboard[0], tmpmarkup)
 	} else {
-		// msg = msg.AppendBold("Error Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
 		tmpmarkup = gotgbot.InlineKeyboardButton{
 			Text: "Memochō",
 			Url:  logUrl,
@@ -91,7 +89,7 @@ var ErrorHandler = func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.Dispatc
 		keyboard[0] = append(keyboard[0], tmpmarkup)
 	}
 
-	msg = msg.AppendBold("Please Check logs ASAP!")
+	msg.Bold("Please Check logs ASAP!")
 	for _, a := range config.Data.SudoUsers {
 		_, err := b.SendMessage(
 			a,
@@ -123,8 +121,7 @@ var ErrorHandler = func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.Dispatc
 }
 
 var PanicHandler = func(b *gotgbot.Bot, ctx *ext.Context, i interface{}) {
-	var stack []byte
-	stack = debug.Stack()
+	stack := debug.Stack()
 	logging.SUGARED.Error(string(stack))
 	defer func() {
 		if err := recover(); err != nil {
@@ -140,29 +137,27 @@ var PanicHandler = func(b *gotgbot.Bot, ctx *ext.Context, i interface{}) {
 	ctxJson, _ := json.MarshalIndent(ctx, "", "  ")
 	// logUrl := helpers.CreateTelegraphPost("Panic Report", string(stack))
 	logUrl, err := postError(string(ctxJson) + "\n\n" + fmt.Sprintf("%s\n\n%v", string(stack), i))
-	msg := mdparser.GetBold("⚠️ An ERROR Occurred ⚠️").AppendNormal("\n\n")
-	msg = msg.AppendNormal("An exception was raised while handling an update.").AppendNormal("\n\n")
-	msg = msg.AppendBold("Panic ID").AppendNormal(": ").AppendMono(uuid.New().String()).AppendNormal("\n")
-	msg = msg.AppendBold("Chat ID").AppendNormal(": ").AppendMono(strconv.FormatInt(uMsg.Chat.Id, 10)).AppendNormal("\n")
+	msg := mdparser.GetBold("⚠️ An ERROR Occurred ⚠️").Normal("\n\n")
+	msg.Normal("An exception was raised while handling an update.").Normal("\n\n")
+	msg.Bold("Panic ID").Normal(": ").Mono(uuid.New().String()).Normal("\n")
+	msg.Bold("Chat ID").Normal(": ").Mono(strconv.FormatInt(uMsg.Chat.Id, 10)).Normal("\n")
+
 	var tmpmarkup gotgbot.InlineKeyboardButton
 	keyboard := make([][]gotgbot.InlineKeyboardButton, 1)
 	if err != nil {
-		// logging.SUGARED.Error(err.Error())
-		// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal(err.Error()).AppendNormal("\n\n")
 		tmpmarkup = gotgbot.InlineKeyboardButton{
 			Text: "Memochō",
 			Url:  logUrl,
 		}
 		keyboard[0] = append(keyboard[0], tmpmarkup)
 	} else {
-		// msg = msg.AppendBold("Panic Log").AppendNormal(": ").AppendNormal("https://hastebin.com/" + logUrl.Key).AppendNormal("\n\n")
 		tmpmarkup = gotgbot.InlineKeyboardButton{
 			Text: "Memochō",
 			Url:  logUrl,
 		}
 		keyboard[0] = append(keyboard[0], tmpmarkup)
 	}
-	msg = msg.AppendBold("Please Check logs ASAP!")
+	msg.Bold("Please Check logs ASAP!")
 	for _, a := range config.Data.SudoUsers {
 		_, err := b.SendMessage(a, msg.ToString(),
 			&gotgbot.SendMessageOpts{ParseMode: "markdownv2", ReplyMarkup: &gotgbot.InlineKeyboardMarkup{

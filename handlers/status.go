@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"fmt"
-	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
-	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
-	"gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 	"html"
 	"net/url"
 	"strconv"
 	"strings"
+
+	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
+	last_fm "gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -167,8 +168,8 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
 			return err
 		}
-		m.AppendItalicThis(l[0].Artist).AppendNormalThis(" - ").AppendBoldThis(l[0].Song).AppendNormalThis("\n")
-		m.AppendNormalThis(l[0].Lyrics)
+		m.Italic(l[0].Artist).Normal(" - ").AppendBoldThis(l[0].Song).Normal("\n")
+		m.Normal(l[0].Lyrics)
 		_, err = msg.Reply(b, m.ToString(), config2.GetDefaultMdOpt())
 		return err
 	}

@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/Dank-del/MusixScrape/musixScrape"
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
-	"strings"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -33,7 +34,8 @@ func lyricsInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 		}
 	}
 	var l []musixScrape.LyricResult
-	for len(l) < 5 {
+
+	for len(l) < 1 {
 		l, err = config2.Local.MusixMatchSession.Search(q)
 		if err != nil {
 			return err
@@ -41,11 +43,16 @@ func lyricsInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	}
 
 	for i := range l {
-		txt := mdparser.GetBold(fmt.Sprintf("Results for %s", q)).AppendNormal("\n\n")
-		txt = txt.AppendItalic(l[i].Lyrics).AppendNormal("\n")
-		results = append(results, gotgbot.InlineQueryResultArticle{Id: inlq.Id, Title: fmt.Sprintf("%s - %s", l[i].Artist, l[i].Song),
-			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: txt.ToString(),
-				ParseMode: "markdownv2"}})
+		txt := mdparser.GetBold("Results for " + q).Normal("\n\n")
+		txt = txt.Italic(l[i].Lyrics).Normal("\n")
+		results = append(results, gotgbot.InlineQueryResultArticle{
+			Id:    inlq.Id,
+			Title: fmt.Sprintf("%s - %s", l[i].Artist, l[i].Song),
+			InputMessageContent: gotgbot.InputTextMessageContent{
+				MessageText: txt.ToString(),
+				ParseMode:   "markdownv2",
+			},
+		})
 	}
 
 	_, err = inlq.Answer(b,
@@ -74,10 +81,10 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	// fmt.Println(q)
 	// var l []musixScrape.LyricResult
 	// e := 0
-	txt := mdparser.GetBold(fmt.Sprintf("Results for %s", q)).AppendNormal("\n")
+	txt := mdparser.GetBold("Results for " + q).Normal("\n")
 	l, err := config2.Local.MusixMatchSession.Search(q)
 	if err != nil {
-		errm := mdparser.GetBold("Failed due to: ").AppendItalic(err.Error())
+		errm := mdparser.GetBold("Failed due to: ").Italic(err.Error())
 		_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
 		return err
 	} else if len(l) == 0 {
@@ -85,8 +92,8 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 		_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
 		return err
 	}
-	txt.AppendItalicThis(l[0].Artist).AppendNormalThis(" - ").AppendBoldThis(l[0].Song).AppendNormalThis("\n")
-	txt.AppendNormalThis(l[0].Lyrics)
+	txt.Italic(l[0].Artist).Normal(" - ").AppendBoldThis(l[0].Song).Normal("\n")
+	txt.Normal(l[0].Lyrics)
 	_, err = msg.Reply(b, txt.ToString(), config2.GetDefaultMdOpt())
 	return err
 }
