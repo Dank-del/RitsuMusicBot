@@ -7,6 +7,9 @@ config.json
 *.exe
 lastfm-tgbot
 
+# ignore debug binary file
+__debug_bin
+
 # ignore shared library files (just in-case)
 *.dll
 tmp/
