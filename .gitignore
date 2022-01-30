@@ -1,6 +1,7 @@
 # ignore config and db files
 config.json
 *.db
+*.db-journal
 
 # ignore executable binary files
 *.exe
