@@ -2,8 +2,9 @@ package database
 
 import (
 	"errors"
-	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"strings"
+
+	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
 )
 
 func UpdateChat(ChatId int64, statusMessage string) {
@@ -14,7 +15,10 @@ func UpdateChat(ChatId int64, statusMessage string) {
 		return
 	}
 	tx := config.Local.SqlSession.Begin()
-	chat := &Chat{ChatID: ChatId, StatusMessage: statusMessage}
+	chat := &Chat{
+		ChatID:        ChatId,
+		StatusMessage: statusMessage,
+	}
 	chatsMap[ChatId] = chat
 	tx.Save(chat)
 	tx.Commit()
@@ -67,7 +71,10 @@ func UpdateLastFMUserInDB(UserID int64, LastFmUsername string) {
 		return
 	}
 	tx := config.Local.SqlSession.Begin()
-	user := &User{UserID: UserID, LastFmUsername: strings.ToLower(LastFmUsername)}
+	user := &User{
+		UserID:         UserID,
+		LastFmUsername: strings.ToLower(LastFmUsername),
+	}
 	usersMap[UserID] = user
 	tx.Save(user)
 	tx.Commit()
@@ -81,8 +88,12 @@ func UpdateBotUser(UserID int64, UserName string, ShowProfile bool) {
 		return
 	}
 	tx := config.Local.SqlSession.Begin()
-	user := BotUser{UserID: UserID, UserName: UserName, ShowProfile: ShowProfile}
-	botUserMapById[UserID] = &user
+	user := &BotUser{
+		UserID:      UserID,
+		UserName:    UserName,
+		ShowProfile: ShowProfile,
+	}
+	botUserMapById[UserID] = user
 	tx.Save(user)
 	tx.Commit()
 }
