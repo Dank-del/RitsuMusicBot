@@ -42,27 +42,6 @@ func GetChat(chatID int64) (c *Chat, err error) {
 	return &p, nil
 }
 
-func (c *Chat) GetStatusMessage() string {
-	if c == nil || c.StatusMessage == "" {
-		return "status"
-	}
-	return c.StatusMessage
-}
-
-func (c *Chat) SetLinkDetection(enabled bool) {
-	databaseMutex.RLock()
-	defer databaseMutex.RUnlock()
-	data := chatsMap[c.ChatID]
-	if data != nil && data.DetectLinks == enabled {
-		return
-	}
-	tx := config.Local.SqlSession.Begin()
-	c.DetectLinks = enabled
-	chatsMap[c.ChatID] = c
-	tx.Save(c)
-	tx.Commit()
-}
-
 func UpdateLastFMUserInDB(UserID int64, LastFmUsername string) {
 	databaseMutex.RLock()
 	defer databaseMutex.RUnlock()
