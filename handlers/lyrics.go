@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"strings"
 
 	"github.com/Dank-del/MusixScrape/musixScrape"
@@ -33,7 +34,7 @@ func lyricsInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 			return err
 		}
 	}
-	var l []musixScrape.LyricResult
+	var l []musixScrape.SearchResult
 
 	for len(l) < 1 {
 		l, err = config2.Local.MusixMatchSession.Search(q)
@@ -44,9 +45,14 @@ func lyricsInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 
 	for i := range l {
 		txt := mdparser.GetBold("Results for " + q).Normal("\n\n")
-		txt = txt.Italic(l[i].Lyrics).Normal("\n")
+		res, err := config2.Local.MusixMatchSession.GetLyrics(l[i].Url)
+		if err != nil {
+			txt = txt.Italic(err.Error()).Normal("\n")
+		} else {
+			txt = txt.Italic(res.Lyrics).Normal("\n")
+		}
 		results = append(results, gotgbot.InlineQueryResultArticle{
-			Id:    inlq.Id,
+			Id:    uuid.NewString(),
 			Title: fmt.Sprintf("%s - %s", l[i].Artist, l[i].Song),
 			InputMessageContent: gotgbot.InputTextMessageContent{
 				MessageText: txt.ToString(),
@@ -93,7 +99,12 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 		return err
 	}
 	txt.Italic(l[0].Artist).Normal(" - ").AppendBoldThis(l[0].Song).Normal("\n")
-	txt.Normal(l[0].Lyrics)
+	res, err := config2.Local.MusixMatchSession.GetLyrics(l[0].Url)
+	if err != nil {
+		txt.Normal(err.Error())
+	} else {
+		txt.Normal(res.Lyrics)
+	}
 	_, err = msg.Reply(b, txt.ToString(), config2.GetDefaultMdOpt())
 	return err
 }

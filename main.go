@@ -32,7 +32,7 @@ func main() {
 	undo := zap.RedirectStdLog(loggerMgr)
 	defer undo()
 	config2.Local.Config = config2.Data
-	config2.Local.MusixMatchSession = musixScrape.New(nil)
+	config2.Local.MusixMatchSession = musixScrape.New()
 	logging.SUGARED.Info("Starting daemon..")
 	b, err := gotgbot.NewBot(config2.Data.BotToken, &gotgbot.BotOpts{
 		Client:      http.Client{},

@@ -169,7 +169,12 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 		m.Italic(l[0].Artist).Normal(" - ").AppendBoldThis(l[0].Song).Normal("\n")
-		m.Normal(l[0].Lyrics)
+		res, err := config2.Local.MusixMatchSession.GetLyrics(l[0].Url)
+		if err != nil {
+			m.Normal(err.Error())
+		} else {
+			m.Normal(res.Lyrics)
+		}
 		_, err = msg.Reply(b, m.ToString(), config2.GetDefaultMdOpt())
 		return err
 	}
