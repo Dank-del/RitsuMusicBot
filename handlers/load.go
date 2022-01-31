@@ -11,7 +11,6 @@ import (
 
 func LoadHandlers(d *ext.Dispatcher) {
 	loadLimiter(d)
-
 	startCMD := handlers.NewCommand(startCommand, startHandler)
 	helpCMD := handlers.NewCommand(helpCommand, helpHandler)
 	statusMsg := handlers.NewMessage(statusFilter, statusHandler)
@@ -33,6 +32,7 @@ func LoadHandlers(d *ext.Dispatcher) {
 	uploadDBcmd := handlers.NewCommand(uploadDatabaseCommand, uploadDatabase)
 	linkMsg := handlers.NewMessage(msgLinkFilter, odesliMessageHandler)
 	logMsg := handlers.NewMessage(logUserFilter, logUser)
+	d.AddHandler(handlers.NewCommand(linkDetectCommand, setLinkDetection))
 	d.AddHandler(startCMD)
 	d.AddHandler(helpCMD)
 	d.AddHandler(gitpullCMD)

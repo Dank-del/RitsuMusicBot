@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
+	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	"gitlab.com/Dank-del/lastfm-tgbot/libs/odesli"
 	"regexp"
 
@@ -11,6 +12,10 @@ import (
 )
 
 func msgLinkFilter(msg *gotgbot.Message) bool {
+	data, _ := database.GetChat(msg.Chat.Id)
+	if msg.Chat.Type != "private" && !data.DetectLinks {
+		return false
+	}
 	txt := msg.Text
 	m, err := regexp.MatchString(urlRegEx, txt)
 	if err != nil {

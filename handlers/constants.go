@@ -16,6 +16,7 @@ const (
 	setVisibilityCommand  = "visible"
 	uploadDatabaseCommand = "uploaddb"
 	changeStatusCommand   = "changestatus"
+	linkDetectCommand     = "linkdetect"
 )
 
 const (

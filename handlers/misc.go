@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/ALiwoto/StrongStringGo/strongStringGo"
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
@@ -37,6 +38,9 @@ func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	txt = txt.AppendMono(strconv.FormatInt(database.GetLastmUserCount(), 10)).AppendNormal(" Last.FM accounts registered").AppendNormal("\n")
 	txt = txt.AppendMono(strconv.FormatInt(database.GetBotUserCount(),
 		10)).AppendNormal(" telegram accounts noticed by ").AppendMention(b.FirstName, b.Id).AppendNormal("\n")
+
+	txt.Bold("Goroutines running: ").Mono(fmt.Sprintf("%v", runtime.NumGoroutine())).Normal("\n")
+	txt.Bold("CPUs available: ").Mono(fmt.Sprintf("%v", runtime.NumCPU())).Normal("\n")
 	txt = txt.AppendBold("Runtime: ").AppendMono(runtime.Version()).AppendNormal("\n\n")
 	txt = txt.AppendBold("Built with ❤ by Sayan Biswas (2021)")
 
@@ -213,6 +217,52 @@ func changeStatusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 	return nil
+}
+
+func setLinkDetection(b *gotgbot.Bot, ctx *ext.Context) error {
+	msg := ctx.Message
+	user := msg.From
+	chat := msg.Chat
+	args := ctx.Args()
+	data, err := database.GetChat(chat.Id)
+	if err != nil {
+		return err
+	}
+	if !utilities.IsUserAdmin(b, &chat, user.Id) {
+		_, err := msg.Reply(b, mdparser.GetItalic("You are not authorized to do that!").ToString(),
+			config2.GetDefaultMdOpt())
+		if err != nil {
+			logging.SUGARED.Error(err.Error())
+			return err
+		}
+		return nil
+	}
+
+	if len(args) == 1 {
+		_, err := msg.Reply(b, mdparser.GetItalic(fmt.Sprintf("Usage: %s <on/off/yes/no>", args[0])).ToString(),
+			&gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	enable := strongStringGo.ToBool(args[1])
+	data.SetLinkDetection(enable)
+	if !enable {
+		_, err := msg.Reply(b, mdparser.GetItalic(fmt.Sprintf("Disabled link detection in %s", chat.Title)).ToString(),
+			&gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+		if err != nil {
+			return err
+		}
+		return ext.EndGroups
+	} else {
+		_, err := msg.Reply(b, mdparser.GetItalic(fmt.Sprintf("Enabled link detection in %s", chat.Title)).ToString(),
+			&gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
+		if err != nil {
+			return err
+		}
+		return ext.EndGroups
+	}
 }
 
 func gitPull(b *gotgbot.Bot, ctx *ext.Context) error {

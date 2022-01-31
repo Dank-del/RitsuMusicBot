@@ -25,6 +25,7 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	txt += fmt.Sprintf("/%s (track) - get lyrics of a track\n", lyricsCommand)
 	txt += fmt.Sprintf(`/%s (yes/no) - toggle lastfm profile link in "status" reply`, setVisibilityCommand) + "\n"
 	txt += fmt.Sprintf(`/%s - show recently played track, also works on saying "status"`, statusCommand) + "\n"
+	txt += fmt.Sprintf(`/%s - toggle link detection in a chat`, linkDetectCommand) + "\n"
 	txt += fmt.Sprintf(`/%s (trigger) - change the "status" trigger to something else`, changeStatusCommand) + "\n"
 	txt += fmt.Sprintf("/%s - get top artists on last.fm, use <code>/%s amount</code> to get exact amount\n", topArtistsCommand, topArtistsCommand)
 	txt += fmt.Sprintf("/%s - makes me send an about message", aboutCommand)

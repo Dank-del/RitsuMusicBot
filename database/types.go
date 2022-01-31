@@ -14,4 +14,5 @@ type BotUser struct {
 type Chat struct {
 	ChatID        int64  `gorm:"primaryKey"`
 	StatusMessage string `gorm:"default:status"`
+	DetectLinks   bool   `gorm:"default:true"`
 }
