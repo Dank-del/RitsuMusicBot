@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
 	"html"
 	"net/url"
 	"strconv"
@@ -9,7 +10,7 @@ import (
 
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
-	last_fm "gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
+	lastfm "gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -55,7 +56,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 
-	d, err := last_fm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
+	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return err
@@ -86,7 +87,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	track := &d.Recenttracks.Track[0]
-	lfmUser, err := last_fm.GetLastFMUser(uname.LastFmUsername)
+	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return err
@@ -123,30 +124,19 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		md = md.AppendBold(msg.From.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
 	}
 
-	md = md.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name).AppendNormal("\n")
-	topTracks, err := last_fm.GetTopTracks(uname.LastFmUsername)
-	if err != nil {
-		md.AppendItalic(err.Error()).AppendNormal("\n")
-	}
-	if topTracks.Error != 0 {
-		md.AppendItalic("Error fetching recent tracks: " + topTracks.Message)
-	} else {
-		var scb string
-		for _, e := range topTracks.Toptracks.Track {
-			if strings.Compare(track.Name, e.Name) == 0 && strings.Compare(track.Artist.Name, e.Artist.Name) == 0 {
-				scb = e.Playcount
-				break
-			}
+	md = md.AppendItalic(track.Artist.Name).AppendNormal(" - ").AppendBold(track.Name)
+	trackInfo, err := lastfm.GetLastfmTrack(track.Artist.Name, track.Name, uname.LastFmUsername)
+	if scb := trackInfo.Track.Userplaycount; scb != "" {
+		i, err := strconv.Atoi(scb)
+		if err != nil {
+			return err
 		}
-		if scb != "" {
-			md.AppendItalic("Scrobbled " + scb + " times by " + msg.From.FirstName).AppendNormal("\n")
-		}
+		md.Normal(" (" + utilities.AddNumberSuffix(i) + " scrobble)").Normal("\n")
 	}
 	if track.Loved == "1" {
 		md = md.AppendItalic("Loved ♥").AppendNormal("\n")
 	}
-	md = md.AppendItalic(fmt.Sprintf("%s scrobbles so far", lfmUser.User.Playcount))
-	topTracks = nil
+	// md = md.AppendItalic(fmt.Sprintf("%s scrobbles so far", lfmUser.User.Playcount))
 
 	_, err = msg.Reply(b, md.ToString(),
 		&gotgbot.SendMessageOpts{
@@ -181,7 +171,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	return err
 }
 
-func generateButtons(track *last_fm.Track, album bool,
+func generateButtons(track *lastfm.Track, album bool,
 	id int64) *gotgbot.InlineKeyboardMarkup {
 	yturl := fmt.Sprintf("https://www.youtube.com/results?search_query=%s",
 		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
@@ -289,7 +279,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 		return ext.EndGroups
 	}
 
-	d, err := last_fm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
+	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return err
@@ -307,7 +297,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 			InputMessageContent: gotgbot.InputTextMessageContent{MessageText: m.ToString(), ParseMode: "markdownv2"}})
 	}
 
-	lfmUser, err := last_fm.GetLastFMUser(uname.LastFmUsername)
+	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return err
@@ -335,8 +325,15 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 		default:
 			m = mdparser.GetBold(user.FirstName).AppendNormal(fmt.Sprintf(" %s listening to", s)).AppendNormal("\n")
 		} //mdparser.GetNormal(fmt.Sprintf("%s %s listening to", user.FirstName, s)).AppendNormal("\n")
-		m = m.AppendItalic(i.Artist.Name).AppendNormal(" - ").AppendBold(i.Name).AppendNormal("\n")
-		m = m.AppendItalic(fmt.Sprintf("%s total plays", lfmUser.User.Playcount))
+		m = m.AppendItalic(i.Artist.Name).AppendNormal(" - ").AppendBold(i.Name)
+		trackInfo, err := lastfm.GetLastfmTrack(i.Artist.Name, i.Name, uname.LastFmUsername)
+		if scb := trackInfo.Track.Userplaycount; scb != "" {
+			i, err := strconv.Atoi(scb)
+			if err != nil {
+				return err
+			}
+			m.Normal(" (" + utilities.AddNumberSuffix(i) + " scrobble)").Normal("\n")
+		}
 		if i.Loved == "1" {
 			m = m.AppendNormal(", ").AppendItalic("Loved ♥")
 		}
@@ -387,7 +384,7 @@ func getStatus(user *gotgbot.User) (mdparser.WMarkDown, error) {
 			return nil, err
 		}
 	}
-	d, err := last_fm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
+	d, err := lastfm.GetRecentTracksByUsername(uname.LastFmUsername, 2)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return nil, err
@@ -413,7 +410,7 @@ func getStatus(user *gotgbot.User) (mdparser.WMarkDown, error) {
 		s = "was"
 	}
 	track := d.Recenttracks.Track[0]
-	lfmUser, err := last_fm.GetLastFMUser(uname.LastFmUsername)
+	lfmUser, err := lastfm.GetLastFMUser(uname.LastFmUsername)
 	if err != nil {
 		logging.SUGARED.Warn(err.Error())
 		return nil, err
