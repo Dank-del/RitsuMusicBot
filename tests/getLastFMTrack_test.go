@@ -11,10 +11,12 @@ func TestGetLastFmTrack(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	e, err := last_fm.GetLastfmTrack("Pelican Fanclub", "ディザイア")
+	e, err := last_fm.GetLastfmTrack("Pelican Fanclub", "ディザイア", "airi_sakura")
 	if err != nil {
 		t.Error(err.Error())
 		return
 	}
-	t.Log(e.Track)
+	t.Log(e.Track.Name)
+	t.Log(e.Track.Artist)
+	t.Log(e.Track.Userplaycount)
 }

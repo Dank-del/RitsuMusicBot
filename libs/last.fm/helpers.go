@@ -84,9 +84,9 @@ func GetTopTracks(username string) (res *TopTrackResponse, err error) {
 	return data, nil
 }
 
-func GetLastfmTrack(artist string, track string) (res *GetLastFmTrackResponse, err error) {
+func GetLastfmTrack(artist string, track string, username string) (res *GetLastFmTrackResponse, err error) {
 	reqUrl := getTrackInfoBaseUrl + fmt.Sprintf("&api_key=%s", config.Data.LastFMKey) +
-		fmt.Sprintf("&artist=%s&track=%s", url.QueryEscape(artist), url.QueryEscape(track)) + "&format=json"
+		fmt.Sprintf("&artist=%s&track=%s&username=%s", url.QueryEscape(artist), url.QueryEscape(track), url.QueryEscape(username)) + "&format=json"
 	resp, err := http.Get(reqUrl)
 	if err != nil {
 		logging.SUGARED.Error(err.Error())

@@ -78,17 +78,18 @@ type RecenttracksAttr struct {
 }
 
 type TrackInfo struct {
-	Name       string      `json:"name"`
-	Mbid       string      `json:"mbid"`
-	URL        string      `json:"url"`
-	Duration   string      `json:"duration"`
-	Streamable *Streamable `json:"streamable"`
-	Listeners  string      `json:"listeners"`
-	Playcount  string      `json:"playcount"`
-	Artist     *Artist     `json:"artist"`
-	Album      *Album      `json:"album"`
-	Toptags    *Toptags    `json:"toptags"`
-	Wiki       *Wiki       `json:"wiki"`
+	Name          string      `json:"name"`
+	Mbid          string      `json:"mbid"`
+	URL           string      `json:"url"`
+	Duration      string      `json:"duration"`
+	Streamable    *Streamable `json:"streamable"`
+	Listeners     string      `json:"listeners"`
+	Playcount     string      `json:"playcount"`
+	Artist        *Artist     `json:"artist"`
+	Album         *Album      `json:"album"`
+	Toptags       *Toptags    `json:"toptags"`
+	Wiki          *Wiki       `json:"wiki"`
+	Userplaycount string      `json:"userplaycount,omitempty"`
 }
 
 type Track struct {
