@@ -39,9 +39,12 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 	uname, err := database.GetLastFMUserFromDB(msg.From.Id)
+	message, err := msg.Reply(b,
+		mdparser.GetItalic("Hold on, getting Last.FM status for "+ctx.EffectiveSender.Name()).ToString(),
+		&gotgbot.SendMessageOpts{ParseMode: "markdownv2"})
 	if uname.LastFmUsername == "" {
-		_, err := msg.Reply(b, "<i>You haven't registered yourself on this bot yet</i>\n<b>Use /setusername</b>",
-			&gotgbot.SendMessageOpts{ParseMode: "html"})
+		_, _, err := message.EditText(b, "<i>You haven't registered yourself on this bot yet</i>\n<b>Use /setusername</b>",
+			&gotgbot.EditMessageTextOpts{ParseMode: "html"})
 		if err != nil {
 			return err
 		}
@@ -50,7 +53,7 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	if err != nil {
-		_, err := msg.Reply(b, fmt.Sprintf("<i>Error: %s</i>", html.EscapeString(err.Error())), &gotgbot.SendMessageOpts{ParseMode: "html"})
+		_, _, err := message.EditText(b, fmt.Sprintf("<i>Error: %s</i>", html.EscapeString(err.Error())), &gotgbot.EditMessageTextOpts{ParseMode: "html"})
 		if err != nil {
 			return err
 		}
@@ -73,8 +76,8 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	if d.Recenttracks == nil || len(d.Recenttracks.Track) == 0 {
-		_, err := msg.Reply(b, "<i>You haven't scrobbed anything yet...</i>",
-			&gotgbot.SendMessageOpts{ParseMode: "html"})
+		_, _, err := message.EditText(b, "<i>You haven't scrobbed anything yet...</i>",
+			&gotgbot.EditMessageTextOpts{ParseMode: "html"})
 		if err != nil {
 			return err
 		}
@@ -140,11 +143,11 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	// md = md.AppendItalic(fmt.Sprintf("%s scrobbles so far", lfmUser.User.Playcount))
 
-	_, err = msg.Reply(b, md.ToString(),
-		&gotgbot.SendMessageOpts{
+	_, _, err = message.EditText(b, md.ToString(),
+		&gotgbot.EditMessageTextOpts{
 			ParseMode:             "markdownv2",
 			DisableWebPagePreview: true,
-			ReplyMarkup:           generateButtons(track, hasAlbum, msg.From.Id),
+			ReplyMarkup:           *generateButtons(track, hasAlbum, msg.From.Id),
 		})
 	return err
 }
