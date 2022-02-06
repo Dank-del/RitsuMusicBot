@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/ALiwoto/StrongStringGo/strongStringGo"
 	"github.com/google/uuid"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
 	"strings"
 
 	"github.com/Dank-del/MusixScrape/musixScrape"
@@ -44,13 +46,26 @@ func lyricsInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	}
 
 	for i := range l {
+		var link string
+		keyboard := make([][]gotgbot.InlineKeyboardButton, 1)
 		txt := mdparser.GetBold("Results for " + q).Normal("\n\n")
 		res, err := config2.Local.MusixMatchSession.GetLyrics(l[i].Url)
 		if err != nil {
 			txt = txt.Italic(err.Error()).Normal("\n")
 		} else {
-			txt = txt.Italic(res.Lyrics).Normal("\n")
+			link, err = utilities.PostLyrics(res.Song, res.Artist, res.Lyrics, config2.Local.TelegraphClient)
+			if err != nil || link == strongStringGo.EMPTY {
+				txt = mdparser.GetItalic("Failed to send lyrics due to telegraph error / Lyrics being empty")
+				keyboard = nil
+			} else {
+				keyboard[0] = append(keyboard[0], gotgbot.InlineKeyboardButton{Text: "Telegra.ph", Url: link})
+			}
 		}
+		var markup *gotgbot.InlineKeyboardMarkup
+		if keyboard != nil {
+			markup = &gotgbot.InlineKeyboardMarkup{InlineKeyboard: keyboard}
+		}
+		txt = mdparser.GetBold(res.Artist).Normal(" - ").Italic(res.Song).Bold(" [Lyrics]")
 		results = append(results, gotgbot.InlineQueryResultArticle{
 			Id:    uuid.NewString(),
 			Title: fmt.Sprintf("%s - %s", l[i].Artist, l[i].Song),
@@ -58,6 +73,7 @@ func lyricsInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 				MessageText: txt.ToString(),
 				ParseMode:   "markdownv2",
 			},
+			ReplyMarkup: markup,
 		})
 	}
 
@@ -87,7 +103,6 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	// fmt.Println(q)
 	// var l []musixScrape.LyricResult
 	// e := 0
-	txt := mdparser.GetBold("Results for " + q).Normal("\n")
 	l, err := config2.Local.MusixMatchSession.Search(q)
 	if err != nil {
 		errm := mdparser.GetBold("Failed due to: ").Italic(err.Error())
@@ -98,13 +113,23 @@ func lyricsHandler(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 		_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
 		return err
 	}
-	txt.Italic(l[0].Artist).Normal(" - ").AppendBoldThis(l[0].Song).Normal("\n")
+	txt := mdparser.GetItalic(l[0].Artist).Normal(" - ").AppendBoldThis(l[0].Song).Normal("\n")
 	res, err := config2.Local.MusixMatchSession.GetLyrics(l[0].Url)
+	link := strongStringGo.EMPTY
 	if err != nil {
 		txt.Normal(err.Error())
 	} else {
-		txt.Normal(res.Lyrics)
+		link, err = utilities.PostLyrics(res.Song, res.Artist, res.Lyrics, config2.Local.TelegraphClient)
+		if err != nil || link == strongStringGo.EMPTY {
+			_, err = msg.Reply(b,
+				mdparser.GetItalic("Failed to send lyrics due to telegraph error / Lyrics being empty").ToString(),
+				config2.GetDefaultMdOpt())
+			return err
+		}
 	}
-	_, err = msg.Reply(b, txt.ToString(), config2.GetDefaultMdOpt())
+	keyboard := make([][]gotgbot.InlineKeyboardButton, 1)
+	keyboard[0] = append(keyboard[0], gotgbot.InlineKeyboardButton{Text: "Telegra.ph", Url: link})
+	_, err = msg.Reply(b, txt.ToString(), &gotgbot.SendMessageOpts{ParseMode: "markdownv2",
+		ReplyMarkup: &gotgbot.InlineKeyboardMarkup{InlineKeyboard: keyboard}})
 	return err
 }
