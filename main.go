@@ -9,6 +9,7 @@ import (
 	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	"gitlab.com/Dank-del/lastfm-tgbot/handlers"
+	"gitlab.com/toby3d/telegraph"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -58,6 +59,16 @@ func main() {
 	if err != nil {
 		logging.SUGARED.Error(fmt.Sprintf("Failed to start polling due to %s", err.Error()))
 	}
+	tf, err := telegraph.CreateAccount(telegraph.Account{
+		AuthorName: b.User.Username,
+		ShortName:  b.User.FirstName,
+		AuthorURL:  fmt.Sprintf("https://telegram.dog/%s", b.User.Username),
+	})
+	if err != nil {
+		log.Fatalf("Error while registering on telegra.ph: %s", err.Error())
+		return
+	}
+	config2.Local.TelegraphClient = tf
 	database.StartDatabase(b.Id)
 	logging.SUGARED.Info(fmt.Sprintf("%s has started | ID: %d", b.Username, b.Id))
 	updater.Idle()

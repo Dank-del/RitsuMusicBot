@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/ALiwoto/StrongStringGo/strongStringGo"
+	"github.com/Dank-del/MusixScrape/musixScrape"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
 	"html"
 	"net/url"
@@ -144,30 +146,6 @@ func statusHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			DisableWebPagePreview: true,
 			ReplyMarkup:           generateButtons(track, hasAlbum, msg.From.Id),
 		})
-
-	if strings.Contains(msg.Text, lyricsCommand) {
-		m := mdparser.GetBold(fmt.Sprintf("Lyrics: %s - %s", track.Artist.Name, track.Name)).AppendNormal("\n\n")
-		// var l []musixScrape.LyricResult
-		l, err := config2.Local.MusixMatchSession.Search(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name))
-		if err != nil {
-			errm := mdparser.GetBold("Failed due to: ").AppendItalic(err.Error())
-			_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
-			return err
-		} else if len(l) == 0 {
-			errm := mdparser.GetItalic("No results found")
-			_, err := msg.Reply(b, errm.ToString(), config2.GetDefaultMdOpt())
-			return err
-		}
-		m.Italic(l[0].Artist).Normal(" - ").AppendBoldThis(l[0].Song).Normal("\n")
-		res, err := config2.Local.MusixMatchSession.GetLyrics(l[0].Url)
-		if err != nil {
-			m.Normal(err.Error())
-		} else {
-			m.Normal(res.Lyrics)
-		}
-		_, err = msg.Reply(b, m.ToString(), config2.GetDefaultMdOpt())
-		return err
-	}
 	return err
 }
 
@@ -177,7 +155,25 @@ func generateButtons(track *lastfm.Track, album bool,
 		url.QueryEscape(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name)))
 	var tmpmarkup gotgbot.InlineKeyboardButton
 	keyboard := make([][]gotgbot.InlineKeyboardButton, 2)
-
+	var showLyric bool
+	l, err := config2.Local.MusixMatchSession.Search(fmt.Sprintf("%s - %s", track.Artist.Name, track.Name))
+	if len(l) == 0 || err != nil {
+		showLyric = false
+	} else {
+		showLyric = true
+	}
+	var link string
+	var res musixScrape.Lyrics
+	if showLyric {
+		res, err = config2.Local.MusixMatchSession.GetLyrics(l[0].Url)
+		if err != nil || &res == nil || res.Lyrics == strongStringGo.EMPTY {
+			showLyric = false
+		}
+		link, err = utilities.PostLyrics(res.Song, res.Artist, res.Lyrics, config2.Local.TelegraphClient)
+		if err != nil || link == strongStringGo.EMPTY {
+			showLyric = false
+		}
+	}
 	// view on "Last .FM" button.
 	tmpmarkup = gotgbot.InlineKeyboardButton{
 		Text: "View on Last.FM",
@@ -195,6 +191,14 @@ func generateButtons(track *lastfm.Track, album bool,
 		tmpmarkup = gotgbot.InlineKeyboardButton{
 			Text:         albumText,
 			CallbackData: albumPrefix + strconv.FormatInt(id, 10),
+		}
+		keyboard[1] = append(keyboard[1], tmpmarkup)
+	}
+
+	if showLyric {
+		tmpmarkup = gotgbot.InlineKeyboardButton{
+			Text: "Lyrics",
+			Url:  link,
 		}
 		keyboard[1] = append(keyboard[1], tmpmarkup)
 	}
