@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"github.com/ALiwoto/StrongStringGo/strongStringGo"
 	"github.com/Dank-del/MusixScrape/musixScrape"
+	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
+	lastfm "gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 	"html"
 	"net/url"
 	"strconv"
 	"strings"
-
-	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
-	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
-	lastfm "gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -365,7 +364,7 @@ func statusInline(b *gotgbot.Bot, ctx *ext.Context) error {
 		_, _ = query.Answer(b, results, nil)
 		return ext.EndGroups
 	}
-	_, err = query.Answer(b, results, &gotgbot.AnswerInlineQueryOpts{IsPersonal: true})
+	_, err = query.Answer(b, results, &gotgbot.AnswerInlineQueryOpts{IsPersonal: true, CacheTime: 0})
 	if err != nil {
 		logging.SUGARED.Error(err.Error())
 		return err

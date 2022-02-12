@@ -5,6 +5,7 @@ import (
 	"github.com/Dank-del/MusixScrape/musixScrape"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/auth"
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
@@ -68,8 +69,10 @@ func main() {
 		log.Fatalf("Error while registering on telegra.ph: %s", err.Error())
 		return
 	}
+	config2.Local.Bot = b
 	config2.Local.TelegraphClient = tf
 	database.StartDatabase(b.Id)
+	auth.SpotifyAuthServer()
 	logging.SUGARED.Info(fmt.Sprintf("%s has started | ID: %d", b.Username, b.Id))
 	updater.Idle()
 }

@@ -2,6 +2,8 @@ package database
 
 import (
 	"errors"
+	"github.com/ALiwoto/StrongStringGo/strongStringGo"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/auth"
 	"strings"
 
 	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
@@ -140,4 +142,22 @@ func GetBotUserCount() (c int64) {
 func GetLastmUserCount() (c int64) {
 	config.Local.SqlSession.Model(&User{}).Count(&c)
 	return c
+}
+
+func UpdateSpotifyUser(userId int64, token string) {
+	tx := config.Local.SqlSession.Begin()
+	tx.Save(&auth.SpotifyUser{
+		UserId:       userId,
+		RefreshToken: token,
+	})
+	tx.Commit()
+}
+
+func GetSpotifyUser(userId int64) (*auth.SpotifyUser, error) {
+	var usr *auth.SpotifyUser
+	config.Local.SqlSession.Where(&auth.SpotifyUser{UserId: userId}).Take(&usr)
+	if usr == nil || usr.RefreshToken == strongStringGo.EMPTY {
+		return nil, errors.New("user not found")
+	}
+	return usr, nil
 }

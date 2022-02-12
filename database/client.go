@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/auth"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gorm.io/gorm/logger"
@@ -21,7 +22,7 @@ func StartDatabase(botId int64) {
 	logging.SUGARED.Info("Database connected")
 
 	// Create tables if they don't exist
-	err = config.Local.SqlSession.AutoMigrate(&User{}, &BotUser{}, &Chat{})
+	err = config.Local.SqlSession.AutoMigrate(&User{}, &BotUser{}, &Chat{}, &auth.SpotifyUser{})
 	if err != nil {
 		logging.SUGARED.Error(err)
 	}
