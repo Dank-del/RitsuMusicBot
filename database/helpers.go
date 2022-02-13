@@ -3,7 +3,10 @@ package database
 import (
 	"errors"
 	"github.com/ALiwoto/StrongStringGo/strongStringGo"
+	"github.com/zmb3/spotify/v2"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/auth"
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
 	"strings"
 
 	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
@@ -145,19 +148,49 @@ func GetLastmUserCount() (c int64) {
 }
 
 func UpdateSpotifyUser(userId int64, token string) {
-	tx := config.Local.SqlSession.Begin()
-	tx.Save(&auth.SpotifyUser{
+	var usr *auth.SpotifyUser
+	if usr = spotifyUserMap[userId]; usr != nil && usr.RefreshToken == token {
+		return
+	}
+	ctx := context.Background()
+	userAuth := spotify.New(auth.SpotifyAuthenticator.Client(ctx, &oauth2.Token{RefreshToken: token}))
+	_, err := userAuth.CurrentUser(ctx)
+	if err != nil {
+		return
+	}
+	usr = &auth.SpotifyUser{
 		UserId:       userId,
 		RefreshToken: token,
-	})
+	}
+	spotifyUserMap[userId] = usr
+	tx := config.Local.SqlSession.Begin()
+	tx.Save(usr)
 	tx.Commit()
 }
 
-func GetSpotifyUser(userId int64) (*auth.SpotifyUser, error) {
+func GetSpotifyUser(userId int64) (*spotify.Client, error) {
+	databaseMutex.RLock()
+	defer databaseMutex.RUnlock()
+	ctx := context.Background()
 	var usr *auth.SpotifyUser
+	usr = spotifyUserMap[userId]
+	if usr != nil && usr.UserId == userId {
+		userAuth := spotify.New(auth.SpotifyAuthenticator.Client(ctx, &oauth2.Token{RefreshToken: usr.RefreshToken}))
+		_, err := userAuth.CurrentUser(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return userAuth, nil
+	}
 	config.Local.SqlSession.Where(&auth.SpotifyUser{UserId: userId}).Take(&usr)
 	if usr == nil || usr.RefreshToken == strongStringGo.EMPTY {
 		return nil, errors.New("user not found")
 	}
-	return usr, nil
+	userAuth := spotify.New(auth.SpotifyAuthenticator.Client(ctx, &oauth2.Token{RefreshToken: usr.RefreshToken}))
+	_, err := userAuth.CurrentUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	spotifyUserMap[userId] = usr
+	return userAuth, nil
 }
