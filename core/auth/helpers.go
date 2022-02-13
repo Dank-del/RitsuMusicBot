@@ -10,6 +10,7 @@ package auth
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/zmb3/spotify/v2/auth"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"log"
@@ -22,32 +23,21 @@ import (
 
 func SpotifyAuthServer() {
 	// first start an HTTP server
+	defer log.Println("Listening on:", config.Local.Config.ServerAddr)
 	SpotifyAuthenticator = spotifyauth.New(spotifyauth.WithRedirectURL(config.Local.Config.SpotifyRedirectUri),
 		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate),
 		spotifyauth.WithClientID(config.Local.Config.SpotifyClientID),
 		spotifyauth.WithClientSecret(config.Local.Config.SpotifyClientSecret))
-	url := SpotifyAuthenticator.AuthURL(state)
-	fmt.Println("Please log in to Spotify by visiting the following page in your browser:", url)
+	SpotifyAuthUrl = SpotifyAuthenticator.AuthURL(state)
+	log.Println("Please log in to Spotify by visiting the following page in your browser:", SpotifyAuthUrl)
 	http.HandleFunc("/callback", completeAuth)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Got request for:", r.URL.String())
 	})
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(config.Local.Config.ServerAddr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	/*
-		wait for SpotifyAuthenticator to complete
-		client := <-ch
-
-		// use the client to make calls that require authorization
-		user, err := client.CurrentUser(context.Background())
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println("You are logged in as:", user.ID)
-	*/
 }
 
 func completeAuth(w http.ResponseWriter, r *http.Request) {
@@ -60,22 +50,27 @@ func completeAuth(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		log.Fatalf("State mismatch: %s != %s\n", st, state)
 	}
-
-	// use the token to get an authenticated client
-	htmlMarkup := fmt.Sprintf(`
-<!-- owo -->
-<body style="background-color:black;">
-<h3 style="color:#FFFFFF;" > %s Authentication for  <span style="background-color: #1cac4c; color: white; padding: 0 3px;">Spotify</span> is now complete.</h3>
-<p><strong style="color:#FFFFFF;" >Copy the below text and send to @%s.</strong></p>
-<code style="color:#FFFFFF;">/start spotifyCode%s</code>
-`, config.Local.Bot.FirstName, config.Local.Bot.Username, tok.RefreshToken)
-	_, err = fmt.Fprint(w, htmlMarkup)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	// log.Println(client)
-	// log.Println(tok)
+	key := uuid.NewString()
+	TokenMutex.RLock()
+	TokenMap[key] = tok.RefreshToken
+	TokenMutex.RUnlock()
+	http.Redirect(w, r, fmt.Sprintf("https://t.me/%s?start=spotifyCode%s", config.Local.Bot.Username, key), 301)
+	/* use the token to get an authenticated client
+		htmlMarkup := fmt.Sprintf(`
+	<!-- owo -->
+	<body style="background-color:black;">
+	<h3 style="color:#FFFFFF;" > %s Authentication for  <span style="background-color: #1cac4c; color: white; padding: 0 3px;">Spotify</span> is now complete.</h3>
+	<p><strong style="color:#FFFFFF;" >Copy the below text and send to @%s.</strong></p>
+	<code style="color:#FFFFFF;">/start spotifyCode%s</code>
+	`, config.Local.Bot.FirstName, config.Local.Bot.Username, tok.RefreshToken)
+		_, err = fmt.Fprint(w, htmlMarkup)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		// log.Println(client)
+		// log.Println(tok)
+	*/
 }
 
 /*
