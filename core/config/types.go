@@ -14,6 +14,7 @@ type DaemonConfig struct {
 	SpotifyClientID     string  `json:"spotify_client_id"`
 	SpotifyClientSecret string  `json:"spotify_client_secret"`
 	SpotifyRedirectUri  string  `json:"spotify_redirect_uri"`
+	ServerAddr          string  `json:"server_addr"`
 }
 
 type DaemonLocal struct {
