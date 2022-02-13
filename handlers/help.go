@@ -19,6 +19,8 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	txt += "<b>Available commands</b>\n"
 	txt += fmt.Sprintf("/%s - starts the bot.\n", startCommand)
 	txt += fmt.Sprintf("/%s - makes me send this message.\n", helpCommand)
+	txt += fmt.Sprintf("/%s - login with Spotify OAuth v2.\n", linkSpotifyCommand)
+	txt += fmt.Sprintf("/%s - show currently playing track on spotify.\n", spotNowCommand)
 	txt += fmt.Sprintf("/%s - register yourself on the bot.\n", registerCommand)
 	txt += fmt.Sprintf("/%s - makes me send a list of tracks you recently played.\n", historyCommand)
 	txt += fmt.Sprintf("/%s (in reply to another user) - show recently track played by the person replied to.\n", getStatusCommand)
@@ -38,11 +40,16 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	ly := "lyrics "
 	l = &ly
 
+	var sp *string
+	spt := fmt.Sprintf(" %s", spotNowCommand)
+	sp = &spt
+
 	if chat.Type == "private" {
 		_, err := msg.Reply(b, txt, &gotgbot.SendMessageOpts{ParseMode: "html",
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
 				{Text: "Status", SwitchInlineQueryCurrentChat: s},
 				{Text: "Lyrics", SwitchInlineQueryCurrentChat: l},
+				{Text: "Spotify", SwitchInlineQueryCurrentChat: sp},
 			}}}})
 		return err
 	} else {

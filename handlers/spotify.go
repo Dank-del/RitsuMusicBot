@@ -8,7 +8,9 @@ import (
 	"github.com/Dank-del/MusixScrape/musixScrape"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"github.com/google/uuid"
 	"github.com/zmb3/spotify/v2"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/auth"
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
@@ -84,4 +86,72 @@ func spotifyNow(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 	return ext.EndGroups
+}
+
+func spotifyInlineFilter(q *gotgbot.InlineQuery) bool {
+	if q == nil {
+		return false
+	}
+	return strings.Contains(strings.ToLower(q.Query), spotNowCommand)
+}
+
+func spotifyInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
+	inlq := ctx.InlineQuery
+	ctxBq := context.Background()
+	var results []gotgbot.InlineQueryResult
+	var result gotgbot.InlineQueryResultArticle
+	spotifyUser, err := database.GetSpotifyUser(inlq.From.Id)
+	if err != nil {
+		txt := mdparser.GetBold("Click ").Link("this", auth.SpotifyAuthUrl).Bold(" link to authenticate.")
+		result = gotgbot.InlineQueryResultArticle{
+			Id:    uuid.NewString(),
+			Title: "Not authorized",
+			InputMessageContent: gotgbot.InputTextMessageContent{
+				MessageText: txt.ToString(),
+				ParseMode:   "markdownv2",
+			},
+		}
+	} else {
+		var txt mdparser.WMarkDown
+		var title string
+		var img string
+		p, err := spotifyUser.PlayerCurrentlyPlaying(ctxBq)
+		if err != nil {
+			title = "Error"
+			txt = mdparser.GetMono(err.Error())
+		} else if !p.Playing {
+			title = "Play something!"
+			txt = mdparser.GetNormal("You're not listening to anything")
+		} else {
+			var artists []string
+			img = p.Item.Album.Images[0].URL
+			for _, a := range p.Item.Artists {
+				artists = append(artists, a.Name)
+			}
+			txt = mdparser.GetUserMention(inlq.From.FirstName, inlq.From.Id).Normal(" is listening to\n").
+				Italic(strings.Join(artists, ", ")).Normal(" - ").Link(p.Item.Name, p.Item.ExternalURLs["spotify"])
+			title = fmt.Sprintf("%s - %s", artists, p.Item.Name)
+		}
+		result = gotgbot.InlineQueryResultArticle{
+			Id:    uuid.NewString(),
+			Title: title,
+			InputMessageContent: gotgbot.InputTextMessageContent{
+				MessageText:           txt.ToString(),
+				ParseMode:             "markdownv2",
+				DisableWebPagePreview: true,
+			},
+			ThumbUrl: img,
+		}
+
+	}
+	results = append(results, result)
+	_, err = inlq.Answer(
+		b, results,
+		&gotgbot.AnswerInlineQueryOpts{IsPersonal: true, CacheTime: 1},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }

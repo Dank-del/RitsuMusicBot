@@ -37,6 +37,7 @@ func LoadHandlers(d *ext.Dispatcher) {
 	d.AddHandler(startCMD)
 	d.AddHandler(helpCMD)
 	d.AddHandler(handlers.NewCommand(spotNowCommand, spotifyNow))
+	d.AddHandler(handlers.NewInlineQuery(spotifyInlineFilter, spotifyInline))
 	d.AddHandler(gitpullCMD)
 	d.AddHandler(statusMsg)
 	d.AddHandler(statusCMD)
