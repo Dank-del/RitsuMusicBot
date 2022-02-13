@@ -17,6 +17,8 @@ const (
 	uploadDatabaseCommand = "uploaddb"
 	changeStatusCommand   = "changestatus"
 	linkDetectCommand     = "linkdetect"
+	linkSpotifyCommand    = "linkspotify"
+	spotNowCommand        = "spotnow"
 )
 
 const (
