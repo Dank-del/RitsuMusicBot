@@ -5,7 +5,7 @@ import (
 	"github.com/Dank-del/MusixScrape/musixScrape"
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"gitlab.com/Dank-del/lastfm-tgbot/core/auth"
+	"gitlab.com/Dank-del/lastfm-tgbot/auth"
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"

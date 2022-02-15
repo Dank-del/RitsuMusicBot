@@ -10,10 +10,10 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/google/uuid"
 	"github.com/zmb3/spotify/v2"
-	"gitlab.com/Dank-del/lastfm-tgbot/core/auth"
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
+	"strconv"
 	"strings"
 )
 
@@ -102,7 +102,9 @@ func spotifyInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	var result gotgbot.InlineQueryResultArticle
 	spotifyUser, err := database.GetSpotifyUser(inlq.From.Id)
 	if err != nil {
-		txt := mdparser.GetBold("Click ").Link("this", auth.SpotifyAuthUrl).Bold(" link to authenticate.")
+		txt := mdparser.GetBold("Click ").Link("this",
+			config2.Local.SpotifyAuthenticator.AuthURL(strconv.FormatInt(inlq.From.Id, 10))).
+			Bold(" link to authenticate.")
 		result = gotgbot.InlineQueryResultArticle{
 			Id:    uuid.NewString(),
 			Title: "Not authorized",

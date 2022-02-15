@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/Dank-del/MusixScrape/musixScrape"
 	"github.com/PaulSonOfLars/gotgbot/v2"
+	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"gitlab.com/toby3d/telegraph"
 	"gorm.io/gorm"
 )
@@ -18,9 +19,10 @@ type DaemonConfig struct {
 }
 
 type DaemonLocal struct {
-	Config            *DaemonConfig
-	SqlSession        *gorm.DB
-	MusixMatchSession *musixScrape.Client
-	TelegraphClient   *telegraph.Account
-	Bot               *gotgbot.Bot
+	Config               *DaemonConfig
+	SqlSession           *gorm.DB
+	MusixMatchSession    *musixScrape.Client
+	TelegraphClient      *telegraph.Account
+	Bot                  *gotgbot.Bot
+	SpotifyAuthenticator *spotifyauth.Authenticator
 }

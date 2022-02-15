@@ -16,3 +16,8 @@ type Chat struct {
 	StatusMessage string `gorm:"default:status"`
 	DetectLinks   bool   `gorm:"default:true"`
 }
+
+type SpotifyUser struct {
+	UserId       int64  `gorm:"primaryKey"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+}

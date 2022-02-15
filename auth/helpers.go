@@ -10,11 +10,13 @@ package auth
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/zmb3/spotify/v2/auth"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
+	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
+	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // redirectURI is the OAuth redirect URI for the application.
@@ -23,13 +25,12 @@ import (
 
 func SpotifyAuthServer() {
 	// first start an HTTP server
-	defer log.Println("Listening on:", config.Local.Config.ServerAddr)
-	SpotifyAuthenticator = spotifyauth.New(spotifyauth.WithRedirectURL(config.Local.Config.SpotifyRedirectUri),
+	log.Println("Listening on:", config.Local.Config.ServerAddr)
+	config.Local.SpotifyAuthenticator = spotifyauth.New(spotifyauth.WithRedirectURL(config.Local.Config.SpotifyRedirectUri),
 		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate),
 		spotifyauth.WithClientID(config.Local.Config.SpotifyClientID),
 		spotifyauth.WithClientSecret(config.Local.Config.SpotifyClientSecret))
-	SpotifyAuthUrl = SpotifyAuthenticator.AuthURL(state)
-	log.Println("Please log in to Spotify by visiting the following page in your browser:", SpotifyAuthUrl)
+	// log.Println("Please log in to Spotify by visiting the following page in your browser:", SpotifyAuthUrl)
 	http.HandleFunc("/callback", completeAuth)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Got request for:", r.URL.String())
@@ -41,20 +42,20 @@ func SpotifyAuthServer() {
 }
 
 func completeAuth(w http.ResponseWriter, r *http.Request) {
-	tok, err := SpotifyAuthenticator.Token(r.Context(), state, r)
+	st := r.FormValue("state")
+	tok, err := config.Local.SpotifyAuthenticator.Token(r.Context(), st, r)
 	if err != nil {
 		http.Error(w, "Couldn't get token", http.StatusForbidden)
-		log.Println(err)
+		logging.SUGARED.Error(err)
+		return
 	}
-	if st := r.FormValue("state"); st != state {
-		http.NotFound(w, r)
-		log.Fatalf("State mismatch: %s != %s\n", st, state)
+	userId, err := strconv.ParseInt(st, 10, 64)
+	if err != nil {
+		logging.SUGARED.Error(err)
+		return
 	}
-	key := uuid.NewString()
-	TokenMutex.RLock()
-	TokenMap[key] = tok.RefreshToken
-	TokenMutex.RUnlock()
-	http.Redirect(w, r, fmt.Sprintf("https://t.me/%s?start=spotifyCode%s", config.Local.Bot.Username, key), 301)
+	database.UpdateSpotifyUser(userId, tok.RefreshToken)
+	http.Redirect(w, r, fmt.Sprintf("https://t.me/%s?start=sp", config.Local.Bot.Username), 301)
 	/* use the token to get an authenticated client
 		htmlMarkup := fmt.Sprintf(`
 	<!-- owo -->
