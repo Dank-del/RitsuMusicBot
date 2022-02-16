@@ -26,7 +26,10 @@ func SpotifyAuthServer() {
 	// first start an HTTP server
 	log.Println("Listening on:", config.Local.Config.ServerAddr)
 	config.Local.SpotifyAuthenticator = spotifyauth.New(spotifyauth.WithRedirectURL(config.Local.Config.SpotifyRedirectUri),
-		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate),
+		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate,
+			spotifyauth.ScopeUserReadRecentlyPlayed,
+			spotifyauth.ScopeUserReadPlaybackState,
+			spotifyauth.ScopeUserModifyPlaybackState),
 		spotifyauth.WithClientID(config.Local.Config.SpotifyClientID),
 		spotifyauth.WithClientSecret(config.Local.Config.SpotifyClientSecret))
 	// log.Println("Please log in to Spotify by visiting the following page in your browser:", SpotifyAuthUrl)
