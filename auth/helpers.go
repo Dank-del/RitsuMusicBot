@@ -16,7 +16,6 @@ import (
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 // redirectURI is the OAuth redirect URI for the application.
@@ -49,11 +48,20 @@ func completeAuth(w http.ResponseWriter, r *http.Request) {
 		logging.SUGARED.Error(err)
 		return
 	}
-	userId, err := strconv.ParseInt(st, 10, 64)
-	if err != nil {
-		logging.SUGARED.Error(err)
+	config.LinkMutex.RLock()
+	userId := config.LinkMap[st]
+	config.LinkMutex.RUnlock()
+	if userId == 0 {
+		_, err := fmt.Fprint(w, "State unrecognized. Retry the authentication procedure")
+		if err != nil {
+			logging.SUGARED.Error(err)
+			return
+		}
 		return
 	}
+	config.LinkMutex.RLock()
+	config.LinkMap[st] = 0
+	config.LinkMutex.RUnlock()
 	database.UpdateSpotifyUser(userId, tok.RefreshToken)
 	http.Redirect(w, r, fmt.Sprintf("https://t.me/%s?start=sp", config.Local.Bot.Username), 301)
 	/* use the token to get an authenticated client
