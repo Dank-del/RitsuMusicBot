@@ -193,3 +193,10 @@ func GetSpotifyUser(userId int64) (*spotify.Client, error) {
 	spotifyUserMap[userId] = usr
 	return userAuth, nil
 }
+
+func DelSpotifyUser(userId int64) {
+	var u *SpotifyUser
+	config.Local.SqlSession.Where(&SpotifyUser{UserId: userId}).Take(&u)
+	config.Local.SqlSession.Delete(&u)
+	spotifyUserMap[userId] = nil
+}

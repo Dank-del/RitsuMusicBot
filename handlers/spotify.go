@@ -13,15 +13,23 @@ import (
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
-	"strconv"
 	"strings"
 )
 
 func spotifyNow(b *gotgbot.Bot, ctx *ext.Context) error {
 	user := ctx.EffectiveUser
+	_, err := b.SendChatAction(ctx.EffectiveChat.Id, "typing")
+	if err != nil {
+		return err
+	}
+	msg, err := ctx.EffectiveMessage.Reply(b, "Please wait...", nil)
 	ctxBg := context.Background()
 	spotifyUser, err := database.GetSpotifyUser(user.Id)
 	if err != nil {
+		_, err = msg.Delete(b)
+		if err != nil {
+			return err
+		}
 		return linkSpotifyHandler(b, ctx)
 	}
 	if spotifyUser != nil {
@@ -77,11 +85,22 @@ func spotifyNow(b *gotgbot.Bot, ctx *ext.Context) error {
 					Url:  lyricLink,
 				})
 			}
+			_, err = msg.Delete(b)
+			if err != nil {
+				return err
+			}
 			_, err = b.SendPhoto(ctx.EffectiveChat.Id, img, &gotgbot.SendPhotoOpts{
 				ParseMode:   "markdownv2",
 				Caption:     txt.ToString(),
 				ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: keyboard},
 			})
+			return err
+		} else {
+			_, err = msg.Delete(b)
+			if err != nil {
+				return err
+			}
+			_, err = ctx.EffectiveMessage.Reply(b, "You're not listening to anything..", nil)
 			return err
 		}
 	}
@@ -102,9 +121,7 @@ func spotifyInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	var result gotgbot.InlineQueryResultArticle
 	spotifyUser, err := database.GetSpotifyUser(inlq.From.Id)
 	if err != nil {
-		txt := mdparser.GetBold("Click ").Link("this",
-			config2.Local.SpotifyAuthenticator.AuthURL(strconv.FormatInt(inlq.From.Id, 10))).
-			Bold(" link to authenticate.")
+		txt := mdparser.GetBold("Send me ").Mono("/" + linkSpotifyCommand).Bold(" to authenticate")
 		result = gotgbot.InlineQueryResultArticle{
 			Id:    uuid.NewString(),
 			Title: "Not authorized",

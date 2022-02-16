@@ -18,6 +18,7 @@ const (
 	changeStatusCommand   = "changestatus"
 	linkDetectCommand     = "linkdetect"
 	linkSpotifyCommand    = "linkspotify"
+	unlinkSpotifyCommand  = "unlinkspotify"
 	spotNowCommand        = "spotnow"
 )
 

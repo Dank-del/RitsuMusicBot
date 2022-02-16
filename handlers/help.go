@@ -20,6 +20,7 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	txt += fmt.Sprintf("/%s - starts the bot.\n", startCommand)
 	txt += fmt.Sprintf("/%s - makes me send this message.\n", helpCommand)
 	txt += fmt.Sprintf("/%s - login with Spotify OAuth v2.\n", linkSpotifyCommand)
+	txt += fmt.Sprintf("/%s - logout/unlink Spotify account from bot\n", unlinkSpotifyCommand)
 	txt += fmt.Sprintf("/%s - show currently playing track on spotify.\n", spotNowCommand)
 	txt += fmt.Sprintf("/%s - register yourself on the bot.\n", registerCommand)
 	txt += fmt.Sprintf("/%s - makes me send a list of tracks you recently played.\n", historyCommand)
