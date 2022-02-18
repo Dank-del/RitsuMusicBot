@@ -46,18 +46,14 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	sp = &spt
 
 	if chat.Type == "private" {
-		_, err := msg.Reply(b, txt, &gotgbot.SendMessageOpts{ParseMode: "html",
+		_, err = msg.Reply(b, txt, &gotgbot.SendMessageOpts{ParseMode: "html",
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: [][]gotgbot.InlineKeyboardButton{{
 				{Text: "Status", SwitchInlineQueryCurrentChat: s},
 				{Text: "Lyrics", SwitchInlineQueryCurrentChat: l},
 				{Text: "Spotify", SwitchInlineQueryCurrentChat: sp},
 			}}}})
-		return err
 	} else {
 		_, err = b.SendMessage(chat.Id, "<i>Command only for PM</i>", &gotgbot.SendMessageOpts{ParseMode: "html"})
-		if err != nil {
-			return err
-		}
 	}
-	return nil
+	return err
 }
