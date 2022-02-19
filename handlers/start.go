@@ -22,10 +22,11 @@ func startHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		if len(args) > 1 && strings.HasPrefix(args[1], "sp") {
 			auth.OauthMutex.Lock()
 			defer auth.OauthMutex.Unlock()
-			sptUsr, err := database.GetSpotifyUser(user.Id)
+			data, err := database.GetSpotifyUser(user.Id)
 			if err != nil {
 				message = err.Error()
 			} else {
+				sptUsr := auth.GetSpotifyClient(data)
 				currentUser, err := sptUsr.CurrentUser(ctxBg)
 				if err != nil {
 					message = err.Error()

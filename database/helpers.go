@@ -3,9 +3,6 @@ package database
 import (
 	"errors"
 	"github.com/ALiwoto/StrongStringGo/strongStringGo"
-	"github.com/zmb3/spotify/v2"
-	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
 	"strings"
 
 	"gitlab.com/Dank-del/lastfm-tgbot/core/config"
@@ -151,12 +148,6 @@ func UpdateSpotifyUser(userId int64, token string) {
 	if usr = spotifyUserMap[userId]; usr != nil && usr.RefreshToken == token {
 		return
 	}
-	ctx := context.Background()
-	userAuth := spotify.New(config.Local.SpotifyAuthenticator.Client(ctx, &oauth2.Token{RefreshToken: token}))
-	_, err := userAuth.CurrentUser(ctx)
-	if err != nil {
-		return
-	}
 	usr = &SpotifyUser{
 		UserId:       userId,
 		RefreshToken: token,
@@ -167,31 +158,20 @@ func UpdateSpotifyUser(userId int64, token string) {
 	tx.Commit()
 }
 
-func GetSpotifyUser(userId int64) (*spotify.Client, error) {
+func GetSpotifyUser(userId int64) (*SpotifyUser, error) {
 	databaseMutex.RLock()
 	defer databaseMutex.RUnlock()
-	ctx := context.Background()
 	var usr *SpotifyUser
 	usr = spotifyUserMap[userId]
-	if usr != nil && usr.UserId == userId {
-		userAuth := spotify.New(config.Local.SpotifyAuthenticator.Client(ctx, &oauth2.Token{RefreshToken: usr.RefreshToken}))
-		_, err := userAuth.CurrentUser(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return userAuth, nil
+	if usr != nil && usr.UserId == userId && usr.RefreshToken != strongStringGo.EMPTY {
+		return usr, nil
 	}
 	config.Local.SqlSession.Where(&SpotifyUser{UserId: userId}).Take(&usr)
 	if usr == nil || usr.RefreshToken == strongStringGo.EMPTY {
 		return nil, errors.New("user not found")
 	}
-	userAuth := spotify.New(config.Local.SpotifyAuthenticator.Client(ctx, &oauth2.Token{RefreshToken: usr.RefreshToken}))
-	_, err := userAuth.CurrentUser(ctx)
-	if err != nil {
-		return nil, err
-	}
 	spotifyUserMap[userId] = usr
-	return userAuth, nil
+	return usr, nil
 }
 
 func DelSpotifyUser(userId int64) {

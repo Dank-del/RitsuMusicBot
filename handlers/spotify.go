@@ -10,6 +10,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/google/uuid"
 	"github.com/zmb3/spotify/v2"
+	"gitlab.com/Dank-del/lastfm-tgbot/auth"
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
 	"gitlab.com/Dank-del/lastfm-tgbot/database"
@@ -24,7 +25,7 @@ func spotifyNow(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	msg, err := ctx.EffectiveMessage.Reply(b, "Please wait...", nil)
 	ctxBg := context.Background()
-	spotifyUser, err := database.GetSpotifyUser(user.Id)
+	data, err := database.GetSpotifyUser(user.Id)
 	if err != nil {
 		_, err = msg.Delete(b)
 		if err != nil {
@@ -32,9 +33,15 @@ func spotifyNow(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		return linkSpotifyHandler(b, ctx)
 	}
+	spotifyUser := auth.GetSpotifyClient(data)
 	if spotifyUser != nil {
 		currentlyPlaying, err := spotifyUser.PlayerCurrentlyPlaying(ctxBg, spotify.Limit(1))
 		if err != nil {
+			_, errr := msg.Delete(b)
+			if errr != nil {
+				return errr
+			}
+			_, err = ctx.EffectiveMessage.Reply(b, err.Error(), nil)
 			return err
 		}
 		// currentUser, _ := spotifyUser.CurrentUser(ctxBg)
@@ -119,7 +126,7 @@ func spotifyInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 	ctxBq := context.Background()
 	var results []gotgbot.InlineQueryResult
 	var result gotgbot.InlineQueryResultArticle
-	spotifyUser, err := database.GetSpotifyUser(inlq.From.Id)
+	data, err := database.GetSpotifyUser(inlq.From.Id)
 	if err != nil {
 		txt := mdparser.GetBold("Send me ").Mono("/" + linkSpotifyCommand).Bold(" to authenticate")
 		result = gotgbot.InlineQueryResultArticle{
@@ -131,6 +138,7 @@ func spotifyInline(b *gotgbot.Bot, ctx *ext.Context) (err error) {
 			},
 		}
 	} else {
+		spotifyUser := auth.GetSpotifyClient(data)
 		var txt mdparser.WMarkDown
 		var title string
 		var img string
