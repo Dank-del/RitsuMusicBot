@@ -2,16 +2,17 @@ package handlers
 
 import (
 	"fmt"
+	"html"
+	"net/url"
+	"strconv"
+	"strings"
+
 	"github.com/ALiwoto/StrongStringGo/strongStringGo"
 	"github.com/Dank-del/MusixScrape/musixScrape"
 	config2 "gitlab.com/Dank-del/lastfm-tgbot/core/config"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/logging"
 	"gitlab.com/Dank-del/lastfm-tgbot/core/utilities"
 	lastfm "gitlab.com/Dank-del/lastfm-tgbot/libs/last.fm"
-	"html"
-	"net/url"
-	"strconv"
-	"strings"
 
 	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -184,7 +185,7 @@ func generateButtons(track *lastfm.Track, album bool,
 	keyboard[0] = append(keyboard[0], tmpmarkup)
 
 	tmpmarkup = gotgbot.InlineKeyboardButton{
-		Text: "Youtube",
+		Text: "YouTube",
 		Url:  yturl,
 	}
 	keyboard[0] = append(keyboard[0], tmpmarkup)
